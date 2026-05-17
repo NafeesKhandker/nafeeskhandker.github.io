@@ -306,6 +306,44 @@
       font-size: 0.68rem; color: var(--teal); letter-spacing: 0.08em;
     }
 
+    /* ── FEATURED PROJECT CARD (thumbnail + wide) ── */
+    .project-card-featured {
+      grid-column: 1 / -1;
+      background: var(--bg);
+      text-decoration: none; transition: background 0.2s;
+      display: grid; grid-template-columns: 300px 1fr;
+    }
+    .project-card-featured:hover { background: var(--teal-light); }
+    .project-thumb {
+      overflow: hidden; background: var(--bg3);
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .project-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top left;
+      display: block; transition: transform 0.4s ease;
+    }
+    .project-card-featured:hover .project-thumb img { transform: scale(1.03); }
+    .project-card-featured-body {
+      padding: 2rem; display: flex; flex-direction: column;
+    }
+    .project-live-badge {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .project-live-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal); flex-shrink: 0;
+      animation: livepulse 2s ease-in-out infinite;
+    }
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.35; transform: scale(0.8); }
+    }
+
     /* ── PUBLICATIONS ── */
     .pub-year-group { margin-bottom: 2rem; }
     .pub-year-label {
@@ -390,6 +428,8 @@
       .hero-left { padding: 4rem 1.5rem; }
       .section-wrap { padding: 4rem 1.5rem; }
       .about-grid, .projects-grid, .contact-grid { grid-template-columns: 1fr; }
+      .project-card-featured { grid-template-columns: 1fr; }
+      .project-thumb { height: 200px; border-right: none; border-bottom: 1px solid var(--border); }
       footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
     }
   </style>
@@ -687,6 +727,25 @@
         <div class="project-title">RoboArm</div>
         <div class="project-desc">Robotic arm project earning the Gold Award at I-ENVEX 2018, UNIMAP International Innovation &amp; Invention Competition.</div>
         <div class="project-arrow">View Details →</div>
+      </a>
+
+      <!-- FEATURED: AirBnB NYC Tableau Dashboard -->
+      <a href="project-tableau.html" class="project-card-featured">
+        <div class="project-thumb">
+          <img
+            src="https://public.tableau.com/static/images/J9/J9RDFHWJ5/1_rss.png"
+            alt="AirBnB NYC Tableau Dashboard thumbnail"
+            loading="lazy"
+          />
+        </div>
+        <div class="project-card-featured-body">
+          <div class="project-num">07</div>
+          <div class="project-live-badge">Live · Interactive</div>
+          <div class="project-tag">Data Viz · Tableau</div>
+          <div class="project-title">AirBnB NYC Dashboard</div>
+          <div class="project-desc">Interactive Tableau dashboard exploring New York City's short-term rental market — pricing across boroughs, room-type breakdowns, geographic density maps, and host-level analysis. Built as a personal skill project to practise LOD expressions, dashboard actions, and visual layout composition.</div>
+          <div class="project-arrow">View Dashboard →</div>
+        </div>
       </a>
     </div>
   </div>
