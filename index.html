@@ -344,6 +344,37 @@
       50%       { opacity: 0.35; transform: scale(0.8); }
     }
 
+    /* ── R PROJECT THUMBNAIL ART ── */
+    .project-thumb-r {
+      background: linear-gradient(145deg, #0b2545 0%, #0a3a58 55%, #0b4d6b 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .r-art { width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+    .r-art-top { display: flex; align-items: baseline; gap: 0.75rem; }
+    .r-letter {
+      font-family: 'JetBrains Mono', monospace; font-size: 3rem; font-weight: 700;
+      color: var(--teal); line-height: 1; opacity: 0.95;
+    }
+    .r-sublabel {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: rgba(178,221,226,0.5); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .r-bars {
+      display: flex; align-items: flex-end; gap: 4px; height: 52px;
+    }
+    .r-bars div {
+      flex: 1; border-radius: 1px 1px 0 0;
+      background: rgba(14,124,134,0.45);
+    }
+    .r-bars div:nth-child(2n) { background: rgba(178,221,226,0.2); }
+    .r-bars div:nth-child(3n) { background: rgba(14,124,134,0.65); }
+    .r-code-lines { display: flex; flex-direction: column; gap: 5px; }
+    .r-code-line {
+      height: 2px; border-radius: 1px;
+      background: rgba(178,221,226,0.15);
+    }
+
     /* ── PUBLICATIONS ── */
     .pub-year-group { margin-bottom: 2rem; }
     .pub-year-label {
@@ -764,6 +795,42 @@
           <div class="project-title">NY State Crime Analysis Dashboard</div>
           <div class="project-desc">Multi-tab Tableau dashboard exploring crime trends across New York State — offense category breakdowns, county-level geographic maps, and year-over-year comparisons. Built as a personal skill project to practise multi-tab architecture, navigation UX, and storytelling with public government data.</div>
           <div class="project-arrow">View Dashboard →</div>
+        </div>
+      </a>
+
+      <!-- FEATURED: Housing Affordability R Project -->
+      <a href="project-housing.html" class="project-card-featured">
+        <div class="project-thumb project-thumb-r">
+          <div class="r-art">
+            <div class="r-art-top">
+              <span class="r-letter">R</span>
+              <span class="r-sublabel">Quarto · Shiny</span>
+            </div>
+            <div class="r-bars">
+              <div style="height:55%"></div>
+              <div style="height:80%"></div>
+              <div style="height:40%"></div>
+              <div style="height:95%"></div>
+              <div style="height:65%"></div>
+              <div style="height:100%"></div>
+              <div style="height:72%"></div>
+              <div style="height:50%"></div>
+              <div style="height:85%"></div>
+            </div>
+            <div class="r-code-lines">
+              <div class="r-code-line" style="width:75%"></div>
+              <div class="r-code-line" style="width:50%; background:rgba(14,124,134,0.3)"></div>
+              <div class="r-code-line" style="width:65%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="project-card-featured-body">
+          <div class="project-num">09</div>
+          <div class="project-live-badge">Live · Shiny App · RPubs</div>
+          <div class="project-tag">R · Machine Learning · Housing Policy</div>
+          <div class="project-title">Housing Affordability Dynamics in New York State</div>
+          <div class="project-desc">Multi-source analysis integrating Census ACS, FRED economic data, and HUD Fair Market Rent benchmarks across 62 NY counties (2009–2024). Predictive modeling with tidymodels plus a novel machine unlearning experiment to assess how 2022–2024 interest rate shocks shaped model predictions. CUNY DATA 607 Final Project.</div>
+          <div class="project-arrow">View Project →</div>
         </div>
       </a>
     </div>
