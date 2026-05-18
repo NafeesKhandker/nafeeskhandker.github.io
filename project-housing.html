@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Housing Affordability Analysis — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light);
+      color: var(--teal);
+    }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item {
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val {
+      font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text);
+    }
+    .meta-val.live { color: var(--teal); }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem;
+      transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem;
+      align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── RESEARCH QUESTIONS ── */
+    .section-rq {
+      padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .rq-top {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 4.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .rq-intro {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.85;
+    }
+    .rq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .rq-card { background: var(--bg); padding: 2rem 2rem 2.25rem; }
+    .rq-card:first-child { border-right: none; }
+    .rq-number {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .rq-question {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;
+      font-weight: 600; color: var(--navy); line-height: 1.35;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .rq-findings { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .rq-finding {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6;
+    }
+    .rq-finding-icon {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.25rem;
+      background: var(--teal-light); border: 1px solid var(--teal-mid);
+      padding: 0.2rem 0.4rem;
+    }
+    .rq-finding strong { color: var(--text); font-weight: 500; }
+
+    /* ── SHINY APP EMBED ── */
+    .section-shiny {
+      padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .shiny-top {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 2rem; align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+    .shiny-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 600; color: var(--navy); line-height: 1.2;
+    }
+    .shiny-sub {
+      font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-top: 0.35rem;
+    }
+    .open-full {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      transition: opacity 0.2s; padding-top: 0.3rem;
+    }
+    .open-full:hover { opacity: 0.65; }
+    .shiny-frame-wrap {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      overflow: hidden;
+    }
+    .shiny-frame-wrap iframe {
+      display: block; width: 100%; border: none;
+      height: 780px;
+    }
+    .frame-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .frame-note {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--muted2); letter-spacing: 0.05em;
+    }
+
+    /* ── SKILLS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem;
+      align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text {
+      font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6;
+    }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 110px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-rq { padding: 3rem 0; }
+      .rq-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .rq-grid { grid-template-columns: 1fr; }
+      .shiny-top { grid-template-columns: 1fr; gap: 0.75rem; }
+      .section-shiny { padding: 3rem 0; }
+      .shiny-frame-wrap iframe { height: 600px; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Housing Affordability Analysis</span>
+    </div>
+    <div class="hero-eyebrow">R · Quarto · Shiny · CUNY DATA 607</div>
+    <h1 class="hero-h1">
+      <strong>Housing Affordability</strong><br>
+      <em>Dynamics in New York State</em>
+    </h1>
+    <p class="hero-desc">
+      A multi-source analysis integrating Census ACS, FRED macroeconomic data, and HUD 
+      Fair Market Rent benchmarks to investigate what drives housing burden across all 
+      62 New York counties — with a novel application of machine unlearning to assess 
+      how 2022–2024 interest rate shocks shaped predictive models.
+    </p>
+    <div class="tag-row">
+      <span class="tag">R</span>
+      <span class="tag">Quarto</span>
+      <span class="tag">Shiny</span>
+      <span class="tag">Machine Learning</span>
+      <span class="tag">Machine Unlearning</span>
+      <span class="tag">Housing Policy</span>
+      <span class="tag">CUNY DATA 607</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">R · Quarto</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Data Sources</div>
+      <div class="meta-val">Census ACS · FRED · HUD FMR</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Models</div>
+      <div class="meta-val">Linear Regression · Random Forest</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Course</div>
+      <div class="meta-val">CUNY DATA 607 Final Project</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Status</div>
+      <div class="meta-val live">Published · Live</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://rpubs.com/nafees19/1430965" target="_blank" class="meta-link">RPubs Report ↗</a>
+        <a href="https://khandker.shinyapps.io/shinyapp/" target="_blank" class="meta-link">Shiny App ↗</a>
+        <a href="https://github.com/NafeesKhandker/DATA-607-Final-Project" target="_blank" class="meta-link">GitHub Repo ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        This is the final project for CUNY's DATA 607 — but the research question 
+        came from genuine curiosity, not a rubric. Housing affordability is 
+        one of the defining pressures on New York residents, and I wanted to 
+        understand it rigorously: <strong>what actually drives the gap between 
+        what people earn and what they pay to live here?</strong>
+      </p>
+      <p>
+        The project integrates three heterogeneous government data sources — 
+        Census ACS 5-Year estimates for 62 counties (2009–2024), FRED API data 
+        for mortgage rates and inflation, and HUD Fair Market Rent schedules 
+        as a policy-grounded rental benchmark — into a single unified panel 
+        dataset built from scratch via API calls and GitHub-hosted CSVs.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        The workflow follows an <strong>OSEMN framework</strong> (Obtain, Scrub, 
+        Explore, Model, Interpret) — progressing from raw API ingestion and cleaning, 
+        through exploratory visualization, into predictive modeling with tidymodels 
+        and a novel experiment in machine unlearning.
+      </p>
+      <p>
+        The machine unlearning component — selectively removing 2022–2024 
+        high-interest-rate observations by zeroing out case weights — was the 
+        methodological centerpiece. It let me ask: <strong>how much of what these 
+        models "know" is rate-cycle specific versus structurally stable?</strong> 
+        That question has real implications for how HUD FMR benchmarks should 
+        be adjusted across rate-cycle transitions.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 RESEARCH QUESTIONS -->
+  <div class="section-rq reveal">
+    <div class="rq-top">
+      <div class="rail-label">02<span>Research Questions</span></div>
+      <p class="rq-intro">
+        Two questions structure the modeling work — one about prediction, one about 
+        sensitivity. Both are answered through the same unified county-year panel 
+        of 62 New York counties from 2009 to 2024.
+      </p>
+    </div>
+    <div class="rq-grid">
+
+      <div class="rq-card">
+        <div class="rq-number">RQ 1</div>
+        <div class="rq-question">What structural and macroeconomic factors best predict a county's housing burden?</div>
+        <ul class="rq-findings">
+          <li class="rq-finding">
+            <span class="rq-finding-icon">R²</span>
+            <span>Local structural factors — <strong>home prices, population density, and regional rent levels</strong> — explain approximately 96% of housing burden variation across counties.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-finding-icon">↓</span>
+            <span>Macroeconomic variables such as <strong>mortgage rates and the Fed Funds Rate</strong> contributed minimally once local conditions were accounted for.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-finding-icon">🌲</span>
+            <span><strong>Random Forest</strong> outperformed Linear Regression on held-out data, confirming nonlinear interactions between geographic and economic variables.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="rq-card">
+        <div class="rq-number">RQ 2</div>
+        <div class="rq-question">How sensitive are HUD FMR predictions to removal of high-interest-rate years (2022–2024)?</div>
+        <ul class="rq-findings">
+          <li class="rq-finding">
+            <span class="rq-finding-icon">$</span>
+            <span>Machine unlearning produced a <strong>mean statewide prediction shift of −$70/month</strong> — modest but real influence of the rate-hike era on what models learned.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-finding-icon">↕</span>
+            <span>Sensitivity was <strong>heavily concentrated in high-cost downstate counties</strong>. Rural and mid-size upstate markets were largely unaffected, reflecting lower rate-cycle sensitivity.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-finding-icon">✦</span>
+            <span>Both models maintained high R² post-unlearning, confirming FMR is primarily driven by <strong>structural county factors</strong>, not exclusively by interest rate environment.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 03 SHINY APP -->
+  <div class="section-shiny reveal">
+    <div class="shiny-top">
+      <div class="rail-label">03<span>Interactive App</span></div>
+      <div>
+        <div class="shiny-heading">Live Shiny Dashboard</div>
+        <div class="shiny-sub">Explore housing burden by county, year, and income group. Interact with the maps, filters, and model outputs directly.</div>
+      </div>
+      <a href="https://khandker.shinyapps.io/shinyapp/" target="_blank" class="open-full">Open in new tab ↗</a>
+    </div>
+    <div class="shiny-frame-wrap">
+      <iframe
+        src="https://khandker.shinyapps.io/shinyapp/"
+        title="Housing Affordability NY State — Interactive Shiny App"
+        loading="lazy"
+        allowfullscreen
+      ></iframe>
+      <div class="frame-footer">
+        <span class="frame-note">Hosted on ShinyApps.io · R Shiny · May take a few seconds to wake up</span>
+        <a href="https://khandker.shinyapps.io/shinyapp/" target="_blank" class="open-full">Full screen ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 SKILLS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">04<span>What I practiced</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Multi-API data acquisition</strong> — Pulled county-level ACS 5-year 
+          data via the Census API, macroeconomic indicators from the FRED API with 
+          custom retry logic, and HUD FMR schedules from GitHub-hosted CSVs — all 
+          integrated into one panel dataset from scratch.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Predictive modeling with tidymodels</strong> — Built Linear Regression 
+          and Random Forest pipelines using recipes, workflows, and cross-validation. 
+          Used the {vip} package to interpret variable importance across both models.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Machine unlearning</strong> — Implemented selective case weight 
+          reduction (1.00 → 0.00) on 2022–2024 observations to simulate removal 
+          of rate-shock era data and measure counterfactual prediction shifts 
+          across all 62 counties.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Geospatial analysis</strong> — Mapped county-level housing burden 
+          and FMR sensitivity using {leaflet}, {tigris}, and {sf}, including 
+          choropleth views normalized by population to avoid density bias.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Shiny app development</strong> — Built a multi-tab interactive 
+          dashboard deploying the model outputs and exploratory views, hosted 
+          live on ShinyApps.io for public access.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">06</span>
+        <span class="learned-text">
+          <strong>Quarto publishing</strong> — Documented the full OSEMN workflow 
+          in a reproducible Quarto document with embedded R outputs, published 
+          to RPubs as a navigable HTML report.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr>
+          <td>Language</td>
+          <td>R · Quarto</td>
+        </tr>
+        <tr>
+          <td>Data</td>
+          <td>tidycensus, fredr, httr, jsonlite</td>
+        </tr>
+        <tr>
+          <td>Wrangling</td>
+          <td>tidyverse, lubridate, zoo, dplyr</td>
+        </tr>
+        <tr>
+          <td>Modeling</td>
+          <td>tidymodels, vip, randomForest</td>
+        </tr>
+        <tr>
+          <td>Spatial</td>
+          <td>leaflet, tigris, sf</td>
+        </tr>
+        <tr>
+          <td>Viz</td>
+          <td>ggplot2, patchwork, scales, gt</td>
+        </tr>
+        <tr>
+          <td>App</td>
+          <td>Shiny · ShinyApps.io</td>
+        </tr>
+        <tr>
+          <td>Publish</td>
+          <td>RPubs · GitHub</td>
+        </tr>
+        <tr>
+          <td>Dataset</td>
+          <td>Census ACS 5-Yr · FRED · HUD FMR (62 NY counties, 2009–2024)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Explore the full project</h3>
+      <p>Published report, interactive app, and all source code are publicly available.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://rpubs.com/nafees19/1430965" target="_blank" class="btn btn-primary">RPubs Report ↗</a>
+      <a href="https://khandker.shinyapps.io/shinyapp/" target="_blank" class="btn btn-outline">Shiny App ↗</a>
+      <a href="https://github.com/NafeesKhandker/DATA-607-Final-Project" target="_blank" class="btn btn-outline">GitHub ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- FOOTER -->
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
