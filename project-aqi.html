@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Air Quality Analysis — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light);
+      color: var(--teal);
+    }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-val.live { color: var(--teal); }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── RESEARCH QUESTIONS (3-col) ── */
+    .section-rq { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    .rq-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem;
+    }
+    .rq-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .rq-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .rq-card { background: var(--bg); padding: 2rem 1.75rem 2.25rem; }
+    .rq-number {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .rq-question {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); line-height: 1.35;
+      margin-bottom: 1.25rem; padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .rq-findings { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .rq-finding {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.6;
+    }
+    .rq-badge {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.2rem;
+      background: var(--teal-light); border: 1px solid var(--teal-mid);
+      padding: 0.15rem 0.35rem; white-space: nowrap;
+    }
+    .rq-finding strong { color: var(--text); font-weight: 500; }
+
+    /* ── MODEL RESULTS TABLE ── */
+    .section-results {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .results-inner { display: flex; flex-direction: column; gap: 2.5rem; }
+    .results-block-label {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 1rem;
+    }
+    .results-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .results-table th {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--teal); background: var(--bg2);
+      padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .results-table td {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--muted); padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.best td { color: var(--text); background: var(--teal-light); }
+    .results-table tr.best td:first-child { color: var(--teal); font-weight: 600; }
+    .metric-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .metric-cell { background: var(--bg); padding: 1.5rem; text-align: center; }
+    .metric-num {
+      font-family: 'Inter', sans-serif; font-size: 1.8rem;
+      font-weight: 600; color: var(--teal); display: block;
+      line-height: 1; margin-bottom: 0.4rem;
+    }
+    .metric-lbl {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* ── SKILLS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 110px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-rq { padding: 3rem 0; }
+      .rq-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .rq-grid { grid-template-columns: 1fr; }
+      .section-results { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .metric-row { grid-template-columns: 1fr 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>NYC Air Quality Analysis</span>
+    </div>
+    <div class="hero-eyebrow">Python · Deep Learning · Machine Learning · CUNY DATA 602</div>
+    <h1 class="hero-h1">
+      <strong>Forecasting &amp; Classifying</strong><br>
+      <em>Air Quality in NYC</em>
+    </h1>
+    <p class="hero-desc">
+      A data-driven analysis of 45 years of EPA air quality data across all five NYC boroughs
+      (1980–2025). Using an ELT pipeline through MySQL, LSTM deep learning for time series
+      forecasting, and five classification algorithms to categorize AQI levels — connecting
+      environmental data science to public health insight.
+    </p>
+    <div class="tag-row">
+      <span class="tag">Python</span>
+      <span class="tag">LSTM</span>
+      <span class="tag">LightGBM</span>
+      <span class="tag">Random Forest</span>
+      <span class="tag">MySQL</span>
+      <span class="tag">EPA Data</span>
+      <span class="tag">Public Health</span>
+      <span class="tag">CUNY DATA 602</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">Python · SQL</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Dataset</div>
+      <div class="meta-val">EPA AQI Daily — 77,083 records · 1980–2025</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Models</div>
+      <div class="meta-val">LSTM · LightGBM · Random Forest · KNN · SVC · Logistic Regression</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Course</div>
+      <div class="meta-val">CUNY DATA 602</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Status</div>
+      <div class="meta-val live">Published · Live</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/Forecasting-and-Classifying-Air-Quality-in-NYC-A-Data-Driven-Approach---1980-2025" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://aqs.epa.gov/aqsweb/airdata/download_files.html" target="_blank" class="meta-link">EPA Data Source ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        As a data analyst at the New York State Department of Health, environmental air quality 
+        is directly relevant to the public health work I do daily. This project grew from that 
+        context — I wanted to apply data science rigorously to a domain with <strong>real 
+        public health stakes</strong>, using 45 years of EPA-published AQI data across the 
+        Bronx, Kings, New York, Queens, and Richmond counties.
+      </p>
+      <p>
+        The full data science lifecycle is covered: <strong>ELT pipeline</strong> through MySQL 
+        to consolidate 45 years of individual CSV files into a queryable database, Python-based 
+        loading and filtering via <code>mysql.connector</code>, followed by cleaning, feature 
+        engineering, EDA, and modeling across two distinct problem types — forecasting 
+        and classification.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        Three research questions structure the work. The first characterizes <strong>long-term 
+        AQI trends and seasonal patterns</strong> — including the 2023 spike above 200 linked 
+        to Canadian wildfires and the overall downward trend since the 1980s. The second asks 
+        whether <strong>LSTM deep learning</strong> can forecast future AQI values — it can, 
+        with decent accuracy for an inherently noisy environmental signal. The third compares 
+        <strong>five classification algorithms</strong> for predicting AQI category without 
+        using the AQI value itself — testing whether models can learn the structural patterns 
+        that produce each category.
+      </p>
+      <p>
+        The dataset contains 77,083 instances with no null values, spanning five counties 
+        and covering both routine pollution days and extreme events. The mean AQI of 51.8 
+        confirms NYC has operated at <strong>"Moderate"</strong> air quality on average 
+        across the full period.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 RESEARCH QUESTIONS -->
+  <div class="section-rq reveal">
+    <div class="rq-top">
+      <div class="rail-label">02<span>Research Questions</span></div>
+      <p class="rq-intro">
+        Three questions structure the analysis — one exploratory, one forecasting, one 
+        classification. Each is addressed with appropriate methodology and evaluated against 
+        standard performance metrics for its problem type.
+      </p>
+    </div>
+    <div class="rq-grid">
+
+      <div class="rq-card">
+        <div class="rq-number">RQ 1</div>
+        <div class="rq-question">What were the AQI trends and seasonal patterns across NYC counties from 1980 to 2025?</div>
+        <ul class="rq-findings">
+          <li class="rq-finding">
+            <span class="rq-badge">Trend</span>
+            <span>Overall AQI shows a <strong>downward trend</strong> since the 1980s peak, with recent years consistently below 50 — classified as "Good."</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">Seasonal</span>
+            <span>AQI peaks in <strong>July</strong> driven by ozone formation and summer wildfires; lowest in October. Winter months show stable moderate levels.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">Event</span>
+            <span>2023 spike over 200 AQI linked to <strong>Canadian wildfire smoke</strong> — confirmed by NYS DOH asthma ER visit reports from the same period.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">County</span>
+            <span><strong>New York County</strong> has the highest average AQI (64.2); Kings County the lowest (44.2), followed closely by Queens (45.8).</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="rq-card">
+        <div class="rq-number">RQ 2</div>
+        <div class="rq-question">Can deep learning time series models forecast future AQI levels accurately?</div>
+        <ul class="rq-findings">
+          <li class="rq-finding">
+            <span class="rq-badge">Model</span>
+            <span><strong>Single-layer LSTM</strong> (50 units) trained with Adam optimizer on 80/20 train-test split over 20 epochs with MSE loss.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">MAE</span>
+            <span>Mean Absolute Error of <strong>8.16 AQI units</strong> — acceptable for environmental forecasting where daily values fluctuate widely.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">R²</span>
+            <span>R² of <strong>0.56</strong> — the model captures major temporal trends and seasonal patterns but struggles with sharp pollution spikes.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">Note</span>
+            <span>Training and validation losses converged without overfitting. Mild underfitting suggests room to improve with <strong>meteorological features</strong> or deeper architectures.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="rq-card">
+        <div class="rq-number">RQ 3</div>
+        <div class="rq-question">Can machine learning predict AQI categories using features other than the AQI value itself?</div>
+        <ul class="rq-findings">
+          <li class="rq-finding">
+            <span class="rq-badge">Best</span>
+            <span><strong>LightGBM</strong> achieved the top F1-score of 0.59 and accuracy of 0.58 — best precision-recall balance across all six AQI categories.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">2nd</span>
+            <span><strong>KNN and Random Forest</strong> both matched at F1 0.57, outperforming linear models by better capturing non-linear feature interactions.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">Limit</span>
+            <span>Logistic Regression (F1: 0.33) and SVC (F1: 0.42) struggled with <strong>class imbalance</strong> and complex non-linear relationships.</span>
+          </li>
+          <li class="rq-finding">
+            <span class="rq-badge">CV</span>
+            <span>All models tuned via <strong>TimeSeriesSplit GridSearchCV</strong> to prevent data leakage while preserving temporal sequence in cross-validation.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 03 MODEL RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">03<span>Key Results</span></div>
+    <div class="results-inner">
+
+      <!-- LSTM metrics -->
+      <div>
+        <div class="results-block-label">LSTM Forecasting Performance</div>
+        <div class="metric-row">
+          <div class="metric-cell">
+            <span class="metric-num">8.16</span>
+            <span class="metric-lbl">MAE (AQI units)</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-num">11.65</span>
+            <span class="metric-lbl">RMSE</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-num">28.4%</span>
+            <span class="metric-lbl">MAPE</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-num">0.56</span>
+            <span class="metric-lbl">R² Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classifier comparison -->
+      <div>
+        <div class="results-block-label">Classification Model Comparison</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Classifier</th>
+              <th>F1 Score</th>
+              <th>Accuracy</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="best">
+              <td>LightGBM</td>
+              <td>0.59</td>
+              <td>0.58</td>
+              <td>Best overall — precision/recall balance</td>
+            </tr>
+            <tr>
+              <td>KNN</td>
+              <td>0.57</td>
+              <td>0.55</td>
+              <td>Strong non-linear pattern capture</td>
+            </tr>
+            <tr>
+              <td>Random Forest</td>
+              <td>0.57</td>
+              <td>0.53</td>
+              <td>Comparable to KNN; ensemble robustness</td>
+            </tr>
+            <tr>
+              <td>SVC</td>
+              <td>0.42</td>
+              <td>0.37</td>
+              <td>Struggled with class imbalance</td>
+            </tr>
+            <tr>
+              <td>Logistic Regression</td>
+              <td>0.33</td>
+              <td>0.35</td>
+              <td>Underperformed on nonlinear relationships</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 SKILLS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">04<span>What I practiced</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>ELT pipeline with MySQL</strong> — Built a SQL schema and loaded 45 years of 
+          EPA CSV files into MySQL Workbench. Queried and filtered NYC county data 
+          into a pandas DataFrame using <code>mysql.connector</code>, practicing real 
+          database-driven data acquisition at scale.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Time series preprocessing for LSTM</strong> — Applied MinMaxScaler 
+          normalization, constructed sliding-window sequences, and split temporal 
+          data preserving chronological order to avoid data leakage in a deep 
+          learning context.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>LSTM architecture and training</strong> — Designed, compiled, and 
+          trained a Keras LSTM network with Adam optimizer and MSE loss. Monitored 
+          training vs. validation loss convergence and diagnosed underfitting from 
+          the learning curves.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Feature engineering for classification</strong> — Extracted month 
+          and decade bins from date fields, applied one-hot encoding, and deliberately 
+          excluded AQI from the feature set so models learned category boundaries 
+          from structural signals only.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>TimeSeriesSplit cross-validation</strong> — Used forward-chaining CV 
+          with GridSearchCV to tune hyperparameters across all five classifiers 
+          without breaking temporal order — a critical distinction from standard 
+          k-fold for time-dependent data.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">06</span>
+        <span class="learned-text">
+          <strong>Multi-model comparative analysis</strong> — Evaluated LightGBM, 
+          Random Forest, KNN, SVC, and Logistic Regression on the same dataset 
+          and time-split, producing a rigorous apples-to-apples comparison of 
+          tree-based, distance-based, kernel-based, and linear classifiers.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr>
+          <td>Language</td>
+          <td>Python 3.13.5 · SQL</td>
+        </tr>
+        <tr>
+          <td>Environment</td>
+          <td>Jupyter Notebook 7.3.2 · MySQL Workbench 8.0</td>
+        </tr>
+        <tr>
+          <td>Data</td>
+          <td>pandas · mysql.connector · numpy</td>
+        </tr>
+        <tr>
+          <td>EDA / Viz</td>
+          <td>matplotlib · seaborn</td>
+        </tr>
+        <tr>
+          <td>Deep Learning</td>
+          <td>Keras (LSTM) · TensorFlow · MinMaxScaler</td>
+        </tr>
+        <tr>
+          <td>ML</td>
+          <td>scikit-learn · LightGBM · GridSearchCV · TimeSeriesSplit</td>
+        </tr>
+        <tr>
+          <td>Dataset</td>
+          <td>EPA AQI Daily by County · 77,083 records · 5 NYC counties · 1980–2025</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Explore the full project</h3>
+      <p>Full Jupyter Notebook and SQL schema available on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/Forecasting-and-Classifying-Air-Quality-in-NYC-A-Data-Driven-Approach---1980-2025" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- FOOTER -->
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
