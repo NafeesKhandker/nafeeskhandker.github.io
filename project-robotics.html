@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Robot Path Planning — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light); color: var(--teal);
+    }
+    .tag-ieee {
+      border-color: #1a5fa8; background: #eef4fc; color: #1a5fa8;
+    }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-val.pub { color: #1a5fa8; }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── SIMULATION SCREENSHOT ── */
+    .section-sim {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .sim-top {
+      display: grid; grid-template-columns: 180px 1fr auto;
+      gap: 2rem; align-items: flex-start; margin-bottom: 2rem;
+    }
+    .sim-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 600; color: var(--navy); line-height: 1.2;
+    }
+    .sim-sub { font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-top: 0.35rem; }
+    .sim-img-wrap {
+      border: 1px solid var(--border); background: var(--bg2); overflow: hidden;
+    }
+    .sim-img-wrap img { display: block; width: 100%; height: auto; }
+    .sim-caption {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.25rem; border-top: 1px solid var(--border);
+    }
+    .sim-caption-text {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--muted2); letter-spacing: 0.05em;
+    }
+
+    /* ── HEURISTICS (4-card grid) ── */
+    .section-heuristics {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .heur-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem;
+    }
+    .heur-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .heur-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .heur-card { background: var(--bg); padding: 1.75rem 1.5rem 2rem; }
+    .heur-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .heur-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.5rem;
+    }
+    .heur-formula {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--teal); background: var(--teal-light);
+      border: 1px solid var(--teal-mid);
+      padding: 0.4rem 0.65rem; margin-bottom: 0.9rem;
+      display: inline-block; line-height: 1.5;
+    }
+    .heur-desc { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.65; }
+    .heur-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; margin-top: 0.85rem;
+      border: 1px solid var(--teal-mid); background: var(--teal-light);
+      color: var(--teal);
+    }
+    .heur-badge.best { border-color: #0b2545; background: #0b2545; color: #fff; }
+
+    /* ── RESULTS ── */
+    .section-results {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .results-inner { display: flex; flex-direction: column; gap: 2.5rem; }
+    .results-block-label {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 1rem;
+    }
+
+    /* summary verdict cards */
+    .verdict-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .verdict-card { background: var(--bg); padding: 1.5rem; }
+    .verdict-metric {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .verdict-winner {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .verdict-detail { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    /* algo comparison table */
+    .results-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .results-table th {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
+      background: var(--bg2); padding: 0.8rem 1.1rem;
+      border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .results-table td {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--muted); padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.best td { background: var(--teal-light); color: var(--text); }
+    .results-table tr.best td:first-child { color: var(--teal); font-weight: 600; }
+
+    /* ── SKILLS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 110px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-ieee { background: #1a5fa8; color: #fff; }
+    .btn-ieee:hover { background: #0d3d6e; }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-results { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .sim-top { grid-template-columns: 1fr; gap: 0.75rem; }
+      .section-sim { padding: 3rem 0; }
+      .heur-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .heur-grid { grid-template-columns: 1fr 1fr; }
+      .section-heuristics { padding: 3rem 0; }
+      .verdict-grid { grid-template-columns: 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Mobile Robot Path Planning</span>
+    </div>
+    <div class="hero-eyebrow">Robotics · AI · IEEE ICCIT 2016</div>
+    <h1 class="hero-h1">
+      <strong>Effects of Heuristics</strong> in<br>
+      <em>Mobile Robot Path Planning</em>
+    </h1>
+    <p class="hero-desc">
+      A published IEEE research study proposing and evaluating four novel heuristic functions
+      for path planning in uncertain and dynamic environments — where obstacles move
+      at arbitrary velocities and unpredictable directions. Algorithms were benchmarked
+      across simulation time and travel distance using the Player/Stage robotics simulator.
+    </p>
+    <div class="tag-row">
+      <span class="tag">Robotics</span>
+      <span class="tag">Path Planning</span>
+      <span class="tag">Heuristic Search</span>
+      <span class="tag">A* Algorithm</span>
+      <span class="tag">C++</span>
+      <span class="tag">Player/Stage</span>
+      <span class="tag tag-ieee">IEEE · ICCIT 2016</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">C++ · Eclipse CDT</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Simulator</div>
+      <div class="meta-val">Player/Stage · Ubuntu 14.04</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Algorithms</div>
+      <div class="meta-val">Dijkstra's · GBFS · A* · OCF-A*</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Published</div>
+      <div class="meta-val pub">IEEE 19th ICCIT 2016 · pp. 451–456</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Institution</div>
+      <div class="meta-val">The Millennium University, Bangladesh</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/Effects-of-Heuristics-in-Path-Planning-for-Mobile-Robots-in-Uncertain-and-Dynamic-Environments" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://ieeexplore.ieee.org" target="_blank" class="meta-link">IEEE Xplore ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        Path planning for mobile robots is one of the hardest problems in robotics — and 
+        it becomes significantly more complex when obstacles move at <strong>arbitrary 
+        velocities and unpredictable directions</strong>. Prior research had largely 
+        focused on static environments. This paper addresses the gap: real-time path 
+        planning in genuinely uncertain and dynamic environments, where no prior 
+        information about obstacle behavior is available.
+      </p>
+      <p>
+        The environment is modelled as an <strong>undirected weighted graph G = (V, E)</strong>, 
+        with vertices placed at random coordinates and all nodes strongly connected 
+        via an adjacency matrix. When the robot detects a blocked edge, it sets that 
+        edge weight to infinity and immediately re-plans — all within a strict 
+        real-time constraint using the same graph, preserving memory of previously 
+        encountered obstacles.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        The core contribution of this paper is a set of <strong>four novel heuristic 
+        functions</strong> (h1–h4) designed to be plugged into GBFS and A* — and 
+        benchmarked against Dijkstra's and an Optimized Cost Function (OCF) version 
+        of A*. Experiments were run across static, fixed-position dynamic, and 
+        random-position dynamic obstacle environments with 10, 15, 20, and 25 
+        obstacles each.
+      </p>
+      <p>
+        The key insight: <strong>pursuing the optimal path is not always the best 
+        strategy</strong>. A heuristic that initially expands more nodes (exploring 
+        sub-optimal paths) can help a robot escape obstacles faster, then converge 
+        to optimal as it approaches the goal. This motivated the design of the 
+        adaptive h4 heuristic — the paper's primary contribution.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 SIMULATION SCREENSHOT -->
+  <div class="section-sim reveal">
+    <div class="sim-top">
+      <div class="rail-label">02<span>Simulation</span></div>
+      <div>
+        <div class="sim-heading">Player/Stage Simulation</div>
+        <div class="sim-sub">
+          Robot (red dot) navigating toward goal using sensor-based obstacle detection.
+          Black squares are static obstacles; orange octagons are dynamic obstacles with uncertain velocities.
+          The blue wedges represent the robot's sensor field of view. The dashed red trail shows the planned path.
+        </div>
+      </div>
+    </div>
+    <div class="sim-img-wrap">
+      <img
+        src="https://raw.githubusercontent.com/NafeesKhandker/Effects-of-Heuristics-in-Path-Planning-for-Mobile-Robots-in-Uncertain-and-Dynamic-Environments/main/mobile_robot.png"
+        alt="Player/Stage robot simulation — uncertain dynamic environment"
+        loading="lazy"
+      />
+      <div class="sim-caption">
+        <span class="sim-caption-text">Player/Stage Simulator · Ubuntu 14.04 · C++ · Real-time path re-planning</span>
+        <span class="sim-caption-text">Elapsed: 1m 22s 900ms</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 FOUR HEURISTICS -->
+  <div class="section-heuristics reveal">
+    <div class="heur-top">
+      <div class="rail-label">03<span>Heuristics</span></div>
+      <p class="heur-intro">
+        Four heuristic functions were designed and integrated into GBFS and A* for 
+        comparative evaluation. All four are admissible — they never overestimate the 
+        true cost to the goal — which guarantees optimality when conditions allow.
+        The h4 heuristic is the paper's core innovation: an adaptive function that 
+        adjusts its behaviour every iteration of the navigation loop.
+      </p>
+    </div>
+    <div class="heur-grid">
+
+      <div class="heur-card">
+        <div class="heur-num">h1</div>
+        <div class="heur-name">Euclidean Distance</div>
+        <div class="heur-formula">h1(n) = √((xₙ−xg)² + (yₙ−yg)²)</div>
+        <p class="heur-desc">
+          The simplest admissible heuristic — straight-line distance from any node 
+          to the goal. Always less than the true cost, so it often over-expands 
+          unnecessary nodes and slows convergence. A useful baseline.
+        </p>
+        <span class="heur-badge">Admissible · Simple</span>
+      </div>
+
+      <div class="heur-card">
+        <div class="heur-num">h2</div>
+        <div class="heur-name">Actual (True Cost)</div>
+        <div class="heur-formula">h2(n) = c*(n, g)</div>
+        <p class="heur-desc">
+          Uses the true cost from any node to the goal, computed via single-source 
+          shortest path from the goal. Always optimal and always admissible — but 
+          follows the optimal path so rigidly that it can get stuck behind obstacles 
+          without exploring alternatives.
+        </p>
+        <span class="heur-badge">Admissible · Optimal</span>
+      </div>
+
+      <div class="heur-card">
+        <div class="heur-num">h3</div>
+        <div class="heur-name">Combined Heuristic</div>
+        <div class="heur-formula">h3(n) = h2(n) − h1(n)/N</div>
+        <p class="heur-desc">
+          Subtracts a small fractional quantity (Euclidean distance ÷ total nodes) 
+          from the true cost. Admissible because it always stays below h*. Improves 
+          over h2 in some scenarios but uses a <em>constant</em> N — making it 
+          unable to adapt dynamically to environment changes.
+        </p>
+        <span class="heur-badge">Admissible · Combined</span>
+      </div>
+
+      <div class="heur-card">
+        <div class="heur-num">h4</div>
+        <div class="heur-name">Adaptive Heuristic</div>
+        <div class="heur-formula">h4(n) = h2(n) − h1(n)/(i × N)</div>
+        <p class="heur-desc">
+          The paper's core contribution. Uses the loop iteration counter <em>i</em> 
+          to adapt with each re-plan: early iterations expand more nodes (sub-optimal, 
+          fast obstacle escape); later iterations converge to the optimal path near 
+          the goal. Consistently the best performer for simulation time across almost 
+          all obstacle configurations.
+        </p>
+        <span class="heur-badge best">★ Best Performing</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 KEY RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">04<span>Key Results</span></div>
+    <div class="results-inner">
+
+      <div>
+        <div class="results-block-label">Overall Performance Verdict</div>
+        <div class="verdict-grid">
+          <div class="verdict-card">
+            <div class="verdict-metric">Best for Simulation Time</div>
+            <div class="verdict-winner">A* with h4</div>
+            <p class="verdict-detail">
+              Consistently achieves the <strong>lowest coefficient of variation (CV)</strong> 
+              for simulation time across static, fixed-position dynamic, and random-position 
+              dynamic environments — for 10, 15, 20, and 25 obstacles. CV as low as 
+              16.5% (static) and 17.6% (10 dynamic obstacles).
+            </p>
+          </div>
+          <div class="verdict-card">
+            <div class="verdict-metric">Best for Travel Distance</div>
+            <div class="verdict-winner">GBFS h4 / Dijkstra's</div>
+            <p class="verdict-detail">
+              GBFS with h4 achieves the lowest CV for travel distance in static 
+              environments (10.4%) and random-position dynamic environments (15–25 obstacles). 
+              Dijkstra's wins for travel distance with fixed-position dynamic obstacles, 
+              reflecting its shortest-path bias when direction is predictable.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="results-block-label">Algorithm Comparison — Simulation Time CV (Static, 10 Obstacles)</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Heuristic</th>
+              <th>Mean Time (s)</th>
+              <th>Std Dev</th>
+              <th>CV (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="best">
+              <td>A*</td>
+              <td>h4 (Adaptive)</td>
+              <td>52.5</td>
+              <td>8.7</td>
+              <td>16.5%</td>
+            </tr>
+            <tr>
+              <td>A*</td>
+              <td>h2 (True Cost)</td>
+              <td>61.0</td>
+              <td>12.6</td>
+              <td>20.7%</td>
+            </tr>
+            <tr>
+              <td>A*</td>
+              <td>h3 (Combined)</td>
+              <td>63.1</td>
+              <td>15.5</td>
+              <td>24.5%</td>
+            </tr>
+            <tr>
+              <td>Dijkstra's</td>
+              <td>—</td>
+              <td>59.4</td>
+              <td>18.2</td>
+              <td>30.6%</td>
+            </tr>
+            <tr>
+              <td>A*</td>
+              <td>h1 (Euclidean)</td>
+              <td>65.2</td>
+              <td>26.7</td>
+              <td>41.0%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 05 SKILLS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">05<span>Contributions</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Novel heuristic design</strong> — Designed h4, an adaptive heuristic 
+          that incorporates the loop iteration counter to dynamically shift between 
+          exploratory sub-optimal search (obstacle escape) and converging optimal 
+          search (goal approach) within the same navigation run.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Graph-based environment modelling</strong> — Represented the uncertain 
+          dynamic environment as an undirected weighted graph with adjacency-matrix 
+          edge management, enabling real-time edge disconnection and re-planning 
+          without full graph reinitialization.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Multi-algorithm benchmarking</strong> — Implemented and evaluated 
+          Dijkstra's, GBFS, A*, and OCF-A* with all four heuristics across 
+          six experimental conditions (static + 2 dynamic × 4 obstacle counts), 
+          using CV as the statistical dispersion metric for fair comparison.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Real-time replanning architecture</strong> — Built the DynamicPlanning 
+          procedure in C++: a loop that detects obstacles via sensors, disconnects 
+          blocking edges, and invokes the search algorithm mid-navigation — all 
+          without resetting graph state, leveraging historical obstacle positions.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Player/Stage simulation</strong> — Implemented and ran all experiments 
+          in the Player/Stage multi-robot simulator on Ubuntu 14.04, including 
+          dynamic obstacle velocity control, sensor configuration, and 
+          odometry management for reproducible experimental runs.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr>
+          <td>Language</td>
+          <td>C++</td>
+        </tr>
+        <tr>
+          <td>IDE</td>
+          <td>Eclipse CDT 3.8</td>
+        </tr>
+        <tr>
+          <td>Simulator</td>
+          <td>Player/Stage multi-robot simulation environment</td>
+        </tr>
+        <tr>
+          <td>OS</td>
+          <td>Ubuntu 14.04 LTS (32-bit)</td>
+        </tr>
+        <tr>
+          <td>Hardware</td>
+          <td>Intel Core i5-2430M · 2.40 GHz · 8 GB RAM</td>
+        </tr>
+        <tr>
+          <td>Algorithms</td>
+          <td>Dijkstra's · GBFS · A* · Optimized Cost Function A*</td>
+        </tr>
+        <tr>
+          <td>Metric</td>
+          <td>Coefficient of Variation (CV) — simulation time &amp; travel distance</td>
+        </tr>
+        <tr>
+          <td>Published</td>
+          <td>IEEE 19th ICCIT · Dec 18–20, 2016 · North South University, Dhaka</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full paper</h3>
+      <p>Source code and simulation files available on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/Effects-of-Heuristics-in-Path-Planning-for-Mobile-Robots-in-Uncertain-and-Dynamic-Environments" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://ieeexplore.ieee.org" target="_blank" class="btn btn-ieee">IEEE Xplore ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- FOOTER -->
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
