@@ -306,6 +306,19 @@
       font-size: 0.68rem; color: var(--teal); letter-spacing: 0.08em;
     }
 
+    /* ── CARD WITH THUMBNAIL (for image-rich project cards) ── */
+    .project-card-img {
+      width: calc(100% + 4rem); margin: -2rem -2rem 1.25rem;
+      height: 160px; overflow: hidden; flex-shrink: 0;
+    }
+    .project-card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      display: block; transition: transform 0.4s ease;
+    }
+    .project-card:hover .project-card-img img { transform: scale(1.04); }
+    .project-card.has-img { padding-top: 0; overflow: hidden; }
+
     /* ── FEATURED PROJECT CARD (thumbnail + wide) ── */
     .project-card-featured {
       grid-column: 1 / -1;
@@ -707,12 +720,19 @@
         <div class="project-desc">Novel Mutation Triggering Method for Genetic Algorithm applied to the Traveling Salesman Problem. Published in Springer.</div>
         <div class="project-arrow">View Repo →</div>
       </a>
-      <a href="#" class="project-card">
+      <a href="project-robotics.html" class="project-card has-img">
+        <div class="project-card-img">
+          <img
+            src="https://raw.githubusercontent.com/NafeesKhandker/Effects-of-Heuristics-in-Path-Planning-for-Mobile-Robots-in-Uncertain-and-Dynamic-Environments/main/mobile_robot.png"
+            alt="Player/Stage robot simulation screenshot"
+            loading="lazy"
+          />
+        </div>
         <div class="project-num">04</div>
         <div class="project-tag">Robotics · IEEE</div>
         <div class="project-title">Mobile Robot Path Planning</div>
-        <div class="project-desc">Heuristics-based path planning for mobile robots navigating uncertain and dynamic environments. Published in IEEE.</div>
-        <div class="project-arrow">View Repo →</div>
+        <div class="project-desc">Four novel heuristics for real-time path planning in uncertain and dynamic environments. Benchmarked across Dijkstra's, GBFS, and A* algorithms. Published IEEE ICCIT 2016.</div>
+        <div class="project-arrow">View Project →</div>
       </a>
       <a href="#" class="project-card">
         <div class="project-num">05</div>
@@ -771,7 +791,7 @@
       <a href="project-housing.html" class="project-card-featured">
         <div class="project-thumb">
           <img
-            src="shinyapp.PNG"
+            src="https://raw.githubusercontent.com/NafeesKhandker/DATA-607-Final-Project/main/shinyapp.PNG"
             alt="Housing Affordability NY State — Shiny App screenshot"
             loading="lazy"
           />
@@ -790,7 +810,7 @@
       <a href="project-aqi.html" class="project-card-featured">
         <div class="project-thumb">
           <img
-            src="aqi.png"
+            src="aqi_thumbnail.jpg"
             alt="NYC Air Quality AQI time series analysis thumbnail"
             loading="lazy"
           />
