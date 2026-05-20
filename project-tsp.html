@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSP Genetic Algorithm — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid; grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light); color: var(--teal);
+    }
+    .tag-springer { border-color: #c4192d; background: #fdf0f2; color: #c4192d; }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-val.pub { color: #c4192d; }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── FLOWCHART / VIZ ── */
+    .section-sim {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .sim-top {
+      display: grid; grid-template-columns: 180px 1fr auto;
+      gap: 2rem; align-items: flex-start; margin-bottom: 2rem;
+    }
+    .sim-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 600; color: var(--navy); line-height: 1.2;
+    }
+    .sim-sub { font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-top: 0.35rem; }
+    .sim-img-wrap {
+      border: 1px solid var(--border); background: var(--bg2); overflow: hidden;
+    }
+    .sim-img-wrap img { display: block; width: 100%; height: auto; }
+    .sim-caption {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.25rem; border-top: 1px solid var(--border);
+    }
+    .sim-caption-text {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--muted2); letter-spacing: 0.05em;
+    }
+
+    /* ── MTM METHOD — 3-card grid (3 mutation operators) ── */
+    .section-method {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .method-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem;
+    }
+    .method-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .method-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .method-card { background: var(--bg); padding: 1.75rem 1.5rem 2rem; }
+    .method-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .method-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.5rem; line-height: 1.25;
+    }
+    .method-formula {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); background: var(--teal-light);
+      border: 1px solid var(--teal-mid);
+      padding: 0.4rem 0.65rem; margin-bottom: 0.9rem;
+      display: inline-block; line-height: 1.6;
+    }
+    .method-desc { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.65; }
+    .method-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; margin-top: 0.85rem;
+      border: 1px solid var(--teal-mid); background: var(--teal-light); color: var(--teal);
+    }
+    .method-badge.phase-early { border-color: #1a5fa8; background: #eef4fc; color: #1a5fa8; }
+    .method-badge.phase-late  { border-color: #0b2545; background: #0b2545; color: #fff; }
+
+    /* ── ALGORITHM ── */
+    .section-algo {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .algo-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem; align-items: start;
+    }
+    .algo-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+
+    /* two cols: pseudo-code + adaptive Pm explainer */
+    .algo-body {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+    }
+    .algo-code-panel {
+      background: var(--navy); padding: 2rem 2rem 2.25rem;
+    }
+    .algo-code-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: rgba(178,221,226,0.5); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .algo-code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      line-height: 1.9; color: #c8dde9;
+      white-space: pre;
+    }
+    .algo-code .ln  { color: rgba(178,221,226,0.3); user-select: none; margin-right: 1rem; }
+    .algo-code .kw  { color: #7ecfd8; }
+    .algo-code .op  { color: #b2dde2; }
+    .algo-code .cm  { color: rgba(178,221,226,0.45); font-style: italic; }
+    .algo-code .hi  { color: #fff; font-weight: 600; }
+    .algo-info-panel {
+      background: var(--bg); padding: 2rem 2rem 2.25rem;
+      display: flex; flex-direction: column; gap: 1.5rem;
+    }
+    .algo-info-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .algo-param-row {
+      padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+    }
+    .algo-param-row:last-child { border-bottom: none; }
+    .algo-param-name {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); margin-bottom: 0.3rem;
+    }
+    .algo-param-desc { font-size: 0.82rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .algo-param-eq {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--navy); background: var(--bg2); border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem; margin-top: 0.35rem; display: inline-block;
+    }
+
+    /* ── RESULTS ── */
+    .section-results {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .results-inner { display: flex; flex-direction: column; gap: 2.5rem; }
+    .results-block-label {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 1rem;
+    }
+    .verdict-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .verdict-card { background: var(--bg); padding: 1.5rem; }
+    .verdict-metric {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .verdict-winner {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .verdict-detail { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    .results-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); font-size: 0; }
+    .results-table th {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal);
+      background: var(--bg2); padding: 0.75rem 0.85rem;
+      border-bottom: 1px solid var(--border); text-align: left;
+      border-right: 1px solid var(--border);
+    }
+    .results-table th:last-child { border-right: none; }
+    .results-table td {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted); padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .results-table td:last-child { border-right: none; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.best td { background: var(--teal-light); color: var(--text); }
+    .results-table tr.best td:first-child { color: var(--teal); font-weight: 600; }
+    .results-table th.group { background: var(--navy); color: rgba(178,221,226,0.8); text-align: center; }
+    .results-table td.instance { color: var(--navy); font-weight: 600; }
+    .results-table td.optimal { color: #0b2545; background: #f0f4f8; }
+    .results-table td.win { color: var(--teal); font-weight: 600; background: var(--teal-light); }
+
+    /* ── SKILLS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 110px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-springer { background: #c4192d; color: #fff; }
+    .btn-springer:hover { background: #9b1023; }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-results { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .sim-top { grid-template-columns: 1fr; gap: 0.75rem; }
+      .section-sim { padding: 3rem 0; }
+      .method-top, .algo-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .method-grid { grid-template-columns: 1fr; }
+      .section-method, .section-algo { padding: 3rem 0; }
+      .algo-body { grid-template-columns: 1fr; }
+      .verdict-grid { grid-template-columns: 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>TSP Genetic Algorithm</span>
+    </div>
+    <div class="hero-eyebrow">Algorithm · Optimization · Springer 2020</div>
+    <h1 class="hero-h1">
+      <strong>Mutation Triggering Method</strong> for<br>
+      <em>Genetic Algorithm</em> on TSP
+    </h1>
+    <p class="hero-desc">
+      A published Springer research paper introducing a <strong>Mutation Triggering Method (MTM)</strong>
+      that combines three mutation operators — Swap, Insertion, and 2-opt — and selects between
+      them based on generation progression. Random mutations provide speed and diversity
+      in early generations; knowledge-based 2-opt is triggered in the final phase for
+      high-quality convergence. Tested on nine TSPLIB benchmark instances.
+    </p>
+    <div class="tag-row">
+      <span class="tag">Genetic Algorithm</span>
+      <span class="tag">Traveling Salesman Problem</span>
+      <span class="tag">2-opt Mutation</span>
+      <span class="tag">Swap &amp; Insertion Mutation</span>
+      <span class="tag">TSPLIB</span>
+      <span class="tag">Python</span>
+      <span class="tag tag-springer">Springer · Industry 4.0</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">Python</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Dataset</div>
+      <div class="meta-val">TSPLIB — 9 instances</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Mutation Operators</div>
+      <div class="meta-val">Swap · Insertion · 2-opt</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Published</div>
+      <div class="meta-val pub">Springer · Embracing Industry 4.0 · pp. 159–170</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Institution</div>
+      <div class="meta-val">Daffodil International University, Bangladesh</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/A-Mutation-Triggering-Method-for-Genetic-Algorithm-to-Solve-Traveling-Salesman-Problem" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://link.springer.com" target="_blank" class="meta-link">Springer Link ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        The <strong>Traveling Salesman Problem (TSP)</strong> is one of the most
+        studied NP-hard combinatorial optimization problems: given a set of cities,
+        find the shortest possible tour that visits each city exactly once and returns
+        to the origin. With <em>n</em> cities the search space has (<em>n</em>−1)!
+        possibilities — brute force is infeasible even for modest sizes.
+      </p>
+      <p>
+        <strong>Genetic Algorithms (GA)</strong> are a natural metaheuristic fit for
+        TSP, but mutation operators present a critical design challenge. A
+        <strong>high mutation probability</strong> causes divergence and large
+        computation time; a <strong>low mutation probability</strong> causes premature
+        convergence to local optima. Prior work applied each operator in isolation or
+        at fixed probabilities, leaving untapped the complementary strengths of
+        different mutation types.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        This paper proposes the <strong>Mutation Triggering Method (MTM)</strong>:
+        a strategy that <em>combines</em> Swap, Insertion, and 2-opt mutations and
+        selects between them based on the progression of the generation. The core
+        idea is that <strong>different phases of the search benefit from different
+        mutation types</strong>. Early generations need the speed and diversity of
+        random mutations; late generations need the optimality of knowledge-based
+        heuristic mutation.
+      </p>
+      <p>
+        MTM is benchmarked against Traditional GA (T-GA) with each operator in
+        isolation and against RCDM-GA (random crossover, dynamic mutation) across
+        <strong>nine TSPLIB instances</strong>. MTM found the best travel cost on
+        <strong>6 out of 9 instances</strong>, while completing in a fraction of
+        T-GA (2-opt)'s computation time.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 FLOWCHART -->
+  <div class="section-sim reveal">
+    <div class="sim-top">
+      <div class="rail-label">02<span>Algorithm</span></div>
+      <div>
+        <div class="sim-heading">Algorithm Flowchart</div>
+        <div class="sim-sub">
+          The proposed algorithm follows the standard GA structure except for the mutation phase,
+          which is replaced by the MTM block (dotted region). MTM computes an adaptive probability
+          Pm, evaluates the selector equation, then routes to 2-opt, Swap, or Insertion accordingly.
+        </div>
+      </div>
+    </div>
+    <div class="sim-img-wrap">
+      <!-- Place the paper's Fig. 1 flowchart here as tsp_flowchart.png -->
+      <img
+        src="tsp_flowchart.png"
+        alt="MTM-GA algorithm flowchart — dotted region shows MTM contribution"
+        loading="lazy"
+      />
+      <div class="sim-caption">
+        <span class="sim-caption-text">Fig. 1 — MTM-GA Flowchart · Dotted region = area of contribution</span>
+        <span class="sim-caption-text">Crossover: Order Crossover (OX) · Selection: Tournament Selection</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 THREE MUTATION OPERATORS -->
+  <div class="section-method reveal">
+    <div class="method-top">
+      <div class="rail-label">03<span>Mutation Operators</span></div>
+      <p class="method-intro">
+        The key insight driving MTM is that mutation operators have a <strong>speed-quality
+        tradeoff</strong>. Random-based mutations (Swap and Insertion) are fast but
+        produce low-quality solutions. Knowledge-based mutation (2-opt) is computationally
+        expensive but reliably removes crossing paths and drives toward optimality.
+        MTM captures the benefit of all three by scheduling them across the generation timeline.
+      </p>
+    </div>
+    <div class="method-grid">
+
+      <div class="method-card">
+        <div class="method-num">Phase 1 — First 80%</div>
+        <div class="method-name">Swap Mutation</div>
+        <div class="method-formula">coin toss → 50% prob</div>
+        <p class="method-desc">
+          Two randomly selected genes (cities) in the chromosome are swapped.
+          Applied during the first 80% of maximum generations via a 50/50 coin toss
+          against Insertion mutation. Fast and lightweight — provides rapid exploration
+          of the search space and diverse initial feasible solutions.
+        </p>
+        <span class="method-badge phase-early">Random-based · Fast · Early Phase</span>
+      </div>
+
+      <div class="method-card">
+        <div class="method-num">Phase 1 — First 80%</div>
+        <div class="method-name">Insertion Mutation</div>
+        <div class="method-formula">coin toss → 50% prob</div>
+        <p class="method-desc">
+          A randomly selected gene is removed from its position and re-inserted at
+          a different random position in the chromosome. Applied alongside Swap
+          mutation in the first 80% of generations. Also random and fast — together
+          with Swap it ensures the population doesn't converge before 2-opt is applied.
+        </p>
+        <span class="method-badge phase-early">Random-based · Fast · Early Phase</span>
+      </div>
+
+      <div class="method-card">
+        <div class="method-num">Phase 2 — Last 20%</div>
+        <div class="method-name">2-opt Mutation</div>
+        <div class="method-formula">selector = maxGen − (factor × maxGen)</div>
+        <p class="method-desc">
+          Two edges in the tour are removed and reconnected to eliminate crossing paths.
+          Triggered when the current generation exceeds the selector threshold (e.g., the
+          last 20% of generations). Computationally expensive but highly effective at
+          removing sub-optimal tour segments — applied only when the population has
+          already reached near-feasible solutions worth refining.
+        </p>
+        <span class="method-badge phase-late">★ Knowledge-based · Heuristic · Late Phase</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 MTM ALGORITHM -->
+  <div class="section-algo reveal">
+    <div class="algo-top">
+      <div class="rail-label">04<span>MTM Algorithm</span></div>
+      <p class="algo-intro">
+        Algorithm 1 shows the complete MTM logic. The mutation probability Pm
+        decreases with generation progression via a square-root decay function,
+        ensuring the algorithm converges rather than diverges. The selector
+        equation determines the generation threshold at which 2-opt takes over
+        from Swap/Insertion. A fair coin toss between Swap and Insertion ensures
+        equal diversity pressure from both random operators during Phase 1.
+      </p>
+    </div>
+    <div class="algo-body">
+      <div class="algo-code-panel">
+        <div class="algo-code-label">Algorithm 1 — MTM</div>
+        <div class="algo-code"><span class="ln"> 1:</span>  <span class="op">k</span> ← range [0, 1]
+<span class="ln"> 2:</span>  <span class="op">factor</span> ← range [0, 1]
+<span class="ln"> 3:</span>  find current_gen, max_gen
+<span class="ln"> 4:</span>  <span class="hi">Pm ← k / √(current_gen)</span>
+<span class="ln"> 5:</span>  r1 ← random(0,1)
+<span class="ln"> 6:</span>  r2 ← random(0,1)
+<span class="ln"> 7:</span>  <span class="kw">if</span> r1 &lt; Pm <span class="kw">then</span>
+<span class="ln"> 8:</span>    <span class="hi">selector ← max_gen − (factor × max_gen)</span>
+<span class="ln"> 9:</span>    <span class="kw">if</span> current_gen &gt; selector <span class="kw">then</span>
+<span class="ln">10:</span>      <span class="hi">Apply 2-opt mutation</span>   <span class="cm">← last 20%</span>
+<span class="ln">11:</span>    <span class="kw">else if</span> r2 &lt; 0.5 <span class="kw">then</span>
+<span class="ln">12:</span>      Apply Swap mutation      <span class="cm">← first 80%</span>
+<span class="ln">13:</span>    <span class="kw">else</span>
+<span class="ln">14:</span>      Apply Insertion mutation <span class="cm">← first 80%</span>
+<span class="ln">15:</span>    <span class="kw">end if</span>
+<span class="ln">16:</span>  <span class="kw">end if</span></div>
+      </div>
+      <div class="algo-info-panel">
+        <div>
+          <div class="algo-info-label">Parameter Definitions</div>
+          <div class="algo-param-row">
+            <div class="algo-param-name">k — Constant Factor</div>
+            <div class="algo-param-desc">Chosen from range [0, 1]. Scales the mutation probability to keep Pm within a probabilistic range across all generations.</div>
+          </div>
+          <div class="algo-param-row">
+            <div class="algo-param-name">Pm — Adaptive Mutation Probability</div>
+            <div class="algo-param-desc">Decreases as generation number increases. Ensures convergence: high early diversity, lower later mutation pressure.</div>
+            <div class="algo-param-eq">Pm = k / √(current generation)</div>
+          </div>
+          <div class="algo-param-row">
+            <div class="algo-param-name">factor — Phase Boundary</div>
+            <div class="algo-param-desc">Controls when 2-opt takes over. A factor of 0.2 means 2-opt fires in the last 20% of generations; Swap and Insertion fill the first 80%.</div>
+            <div class="algo-param-eq">selector = max_gen − (factor × max_gen)</div>
+          </div>
+          <div class="algo-param-row">
+            <div class="algo-param-name">r1, r2 — Random Numbers</div>
+            <div class="algo-param-desc">r1 controls whether any mutation fires (vs. Pm threshold). r2 is the fair coin toss that splits Phase 1 evenly between Swap and Insertion.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">05<span>Key Results</span></div>
+    <div class="results-inner">
+
+      <div>
+        <div class="results-block-label">Overall Performance Verdict</div>
+        <div class="verdict-grid">
+          <div class="verdict-card">
+            <div class="verdict-metric">Travel Cost (Solution Quality)</div>
+            <div class="verdict-winner">MTM-GA wins 6 of 9 instances</div>
+            <p class="verdict-detail">
+              MTM-GA found the best travel cost on <strong>eil51, bier127, kroa100,
+              kroa200, pr226, and st70</strong>. T-GA (2-opt) edged it on a280, lin318,
+              and rat195 — but at dramatically higher computation cost.
+              T-GA (Swap), T-GA (Insertion), RCDM-GA (Swap), and RCDM-GA (Insertion)
+              all converged to local optima on most instances.
+            </p>
+          </div>
+          <div class="verdict-card">
+            <div class="verdict-metric">Computation Time</div>
+            <div class="verdict-winner">MTM-GA: fast vs. 2-opt, optimal vs. random</div>
+            <p class="verdict-detail">
+              T-GA (2-opt) is the most accurate baseline but is <strong>prohibitively
+              slow</strong> — e.g., 2,453s for lin318 vs MTM-GA's 663s.
+              MTM-GA is slower than pure Swap/Insertion approaches but achieves
+              far superior solution quality, making it the best overall tradeoff
+              between time and travel cost.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="results-block-label">Table 1 — Optimal Travel Cost by Algorithm · All 9 TSPLIB Instances</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Instance</th>
+              <th>Known Optimal</th>
+              <th class="group">T-GA Swap</th>
+              <th class="group">T-GA Insert</th>
+              <th class="group">T-GA 2-opt</th>
+              <th class="group">RCDM Swap</th>
+              <th class="group">RCDM Insert</th>
+              <th class="group">MTM-GA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="instance">eil51</td>
+              <td class="optimal">426</td>
+              <td>754</td><td>871</td><td>433</td><td>551</td><td>621</td>
+              <td class="win">432 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">a280</td>
+              <td class="optimal">2,579</td>
+              <td>20,753</td><td>21,476</td><td class="win">2,727 ★</td><td>151,518</td><td>27,779</td>
+              <td>2,756</td>
+            </tr>
+            <tr>
+              <td class="instance">bier127</td>
+              <td class="optimal">118,282</td>
+              <td>365,293</td><td>374,119</td><td>123,294</td><td>469,925</td><td>411,091</td>
+              <td class="win">119,416 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">kroa100</td>
+              <td class="optimal">21,282</td>
+              <td>82,631</td><td>79,085</td><td>21,846</td><td>149,170</td><td>69,010</td>
+              <td class="win">21,666 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">kroa200</td>
+              <td class="optimal">29,368</td>
+              <td>199,256</td><td>190,549</td><td>30,971</td><td>234,087</td><td>242,155</td>
+              <td class="win">30,697 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">lin318</td>
+              <td class="optimal">42,029</td>
+              <td>384,807</td><td>388,311</td><td class="win">43,702 ★</td><td>1,479,572</td><td>698,061</td>
+              <td>44,563</td>
+            </tr>
+            <tr>
+              <td class="instance">pr226</td>
+              <td class="optimal">80,369</td>
+              <td>1,025,700</td><td>976,004</td><td>81,132</td><td>1,228,103</td><td>1,089,287</td>
+              <td class="win">80,728 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">st70</td>
+              <td class="optimal">675</td>
+              <td>1,886</td><td>1,680</td><td>681</td><td>1,133</td><td>31,093</td>
+              <td class="win">678 ★</td>
+            </tr>
+            <tr>
+              <td class="instance">rat195</td>
+              <td class="optimal">2,323</td>
+              <td>13,061</td><td>13,321</td><td class="win">2,419 ★</td><td>19,665</td><td>87,280</td>
+              <td>2,450</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="results-block-label">Table 2 — Computation Time (seconds) · All 9 TSPLIB Instances</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Instance</th>
+              <th class="group">T-GA Swap</th>
+              <th class="group">T-GA Insert</th>
+              <th class="group">T-GA 2-opt</th>
+              <th class="group">RCDM Swap</th>
+              <th class="group">RCDM Insert</th>
+              <th class="group">MTM-GA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="instance">eil51</td><td>2.30</td><td>2.48</td><td>13.23</td><td>4.09</td><td>5.94</td><td>5.30</td></tr>
+            <tr><td class="instance">a280</td><td>40.11</td><td>42.06</td><td>1,313.95</td><td>49.09</td><td>64.69</td><td>354.79</td></tr>
+            <tr><td class="instance">bier127</td><td>10.67</td><td>10.63</td><td>157.77</td><td>13.68</td><td>19.65</td><td>50.54</td></tr>
+            <tr><td class="instance">kroa100</td><td>6.38</td><td>6.85</td><td>93.92</td><td>9.58</td><td>13.29</td><td>27.16</td></tr>
+            <tr><td class="instance">kroa200</td><td>21.35</td><td>22.92</td><td>657.78</td><td>27.28</td><td>29.63</td><td>185.74</td></tr>
+            <tr><td class="instance">lin318</td><td>51.07</td><td>52.46</td><td>2,453.97</td><td>53.13</td><td>81.28</td><td>663.22</td></tr>
+            <tr><td class="instance">pr226</td><td>26.22</td><td>27.02</td><td>992.72</td><td>33.77</td><td>43.85</td><td>229.39</td></tr>
+            <tr><td class="instance">st70</td><td>4.06</td><td>3.88</td><td>31.67</td><td>6.39</td><td>9.56</td><td>11.55</td></tr>
+            <tr><td class="instance">rat195</td><td>21.44</td><td>21.46</td><td>570.57</td><td>25.43</td><td>36.15</td><td>155.37</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 06 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">06<span>Contributions</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Mutation Triggering Method design</strong> — Designed the MTM selector
+          function that divides the generation timeline into two phases and routes
+          mutation to the appropriate operator: Swap/Insertion for early diversity,
+          2-opt for late-stage quality improvement.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Adaptive mutation probability</strong> — Implemented the generation-dependent
+          Pm formula (k / √current_gen) so that mutation pressure decreases smoothly
+          over time, ensuring the algorithm converges rather than diverges as it
+          approaches the final generations.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Three-operator benchmarking</strong> — Implemented and compared
+          T-GA with each of the three mutation operators in isolation, RCDM-GA with
+          Swap and Insertion, and MTM-GA across all nine TSPLIB instances,
+          measuring both travel cost and computation time as evaluation criteria.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Convergence analysis</strong> — Ran all algorithms for 1,000 generations
+          on the rat195 instance and analysed convergence curves to show that
+          MTM-GA avoids the stagnation of pure random mutations and the computational
+          expense of pure 2-opt, reaching near-optimal solutions efficiently.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Springer publication</strong> — Prepared and published in
+          <em>Embracing Industry 4.0</em> (Springer, Singapore, 2020, pp. 159–170),
+          with formal algorithm pseudocode, full experimental tables, and convergence
+          graphs across nine standard TSPLIB benchmark instances.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>Python</td></tr>
+        <tr><td>Problem</td><td>Traveling Salesman Problem (TSP) — symmetric, Euclidean</td></tr>
+        <tr><td>Method</td><td>Mutation Triggering Method (MTM) — Swap + Insertion + 2-opt</td></tr>
+        <tr><td>Crossover</td><td>Order Crossover (OX)</td></tr>
+        <tr><td>Selection</td><td>Tournament Selection</td></tr>
+        <tr><td>Pm Formula</td><td>k / √(current generation number)</td></tr>
+        <tr><td>Selector Eq.</td><td>max_gen − (factor × max_gen)</td></tr>
+        <tr><td>Baselines</td><td>T-GA (Swap / Insertion / 2-opt) · RCDM-GA (Swap / Insertion)</td></tr>
+        <tr><td>Benchmark</td><td>TSPLIB — eil51, a280, bier127, kroa100, kroa200, lin318, pr226, st70, rat195</td></tr>
+        <tr><td>Published</td><td>Springer · Embracing Industry 4.0 · pp. 159–170 · Singapore · 2020</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full paper &amp; source code</h3>
+      <p>Published in Springer <em>Embracing Industry 4.0</em>, 2020, pp. 159–170.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/A-Mutation-Triggering-Method-for-Genetic-Algorithm-to-Solve-Traveling-Salesman-Problem" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://link.springer.com" target="_blank" class="btn btn-springer">Springer Link ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
