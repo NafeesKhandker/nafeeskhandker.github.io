@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFID Attendance Monitoring System — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 15px;
+      line-height: 1.7; overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); text-decoration: none; }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a { font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s; }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO ── */
+    .hero-strip { margin-top: 64px; display: grid; grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border); min-height: 58vh; }
+    .hero-main { padding: 5rem 5rem 4.5rem; display: flex; flex-direction: column;
+      justify-content: flex-end; border-right: 1px solid var(--border); }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem; }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem; display: flex; align-items: center; gap: 0.75rem; }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 { font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1.5rem; }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc { font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem; }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid); background: var(--teal-light); color: var(--teal); }
+    .tag-ijet { border-color: #1a5fa8; background: #eef4fc; color: #1a5fa8; }
+
+    /* ── HERO META ── */
+    .hero-meta { padding: 5rem 2.5rem 4.5rem; background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end; }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-val.pub { color: #1a5fa8; }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; transition: opacity 0.2s; }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+    .rail-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase; padding-top: 0.3rem; }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about { padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr; gap: 4.5rem; align-items: start; }
+    .prose p { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.9; margin-bottom: 1rem; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── ARCHITECTURE ── */
+    .section-arch { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    .arch-top { display: grid; grid-template-columns: 180px 1fr; gap: 4.5rem; margin-bottom: 2.5rem; align-items: start; }
+    .arch-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+
+    /* Two-module diagram */
+    .module-diagram {
+      display: grid; grid-template-columns: 1fr 40px 1fr;
+      gap: 0; background: var(--navy);
+    }
+    .module-box { padding: 2rem 1.75rem; }
+    .module-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: rgba(178,221,226,0.45); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .module-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 600; color: #fff; margin-bottom: 0.9rem; }
+    .module-items { list-style: none; }
+    .module-items li { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: rgba(178,221,226,0.65); padding: 0.22rem 0;
+      border-bottom: 1px solid rgba(178,221,226,0.07); display: flex; gap: 0.5rem; }
+    .module-items li::before { content: '▸'; color: var(--teal); font-size: 0.55rem; margin-top: 0.15rem; }
+    .module-items li:last-child { border-bottom: none; }
+    .module-arrow { display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.3rem; }
+    .module-arrow-icon { color: var(--teal); font-size: 1.2rem; }
+    .module-arrow-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.52rem;
+      color: rgba(14,124,134,0.55); text-align: center; line-height: 1.4; }
+
+    /* N-Tier strip below */
+    .ntier-strip { display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1px; }
+    .ntier-card { background: var(--bg2); padding: 1.25rem 1.5rem; }
+    .ntier-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .ntier-name { font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem; }
+    .ntier-items { list-style: none; }
+    .ntier-items li { font-size: 0.8rem; color: var(--muted); font-weight: 300;
+      padding: 0.15rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; }
+
+    /* ── HARDWARE (4-card) ── */
+    .section-hw { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    .hw-top { display: grid; grid-template-columns: 180px 1fr; gap: 4.5rem; margin-bottom: 2.5rem; }
+    .hw-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .hw-grid { display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .hw-card { background: var(--bg); padding: 1.75rem 1.5rem 2rem; }
+    .hw-num { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .hw-icon { font-size: 1.35rem; margin-bottom: 0.65rem; display: block; }
+    .hw-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.45rem; }
+    .hw-spec { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--teal); background: var(--teal-light); border: 1px solid var(--teal-mid);
+      padding: 0.2rem 0.5rem; margin-bottom: 0.75rem; display: inline-block; }
+    .hw-desc { font-size: 0.83rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    /* ── CONSTRAINTS ── */
+    .section-constraints { padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr; gap: 4.5rem; align-items: start; }
+    .constraint-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .constraint-item { background: var(--bg2); border: 1px solid var(--border);
+      padding: 0.9rem 1.25rem; display: grid; grid-template-columns: 36px 1fr; gap: 0.75rem; }
+    .constraint-id { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); font-weight: 600; margin-top: 0.15rem; }
+    .constraint-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.55; }
+    .constraint-text strong { color: var(--text); font-weight: 500; }
+
+    /* ── RESULTS ── */
+    .section-results { padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr; gap: 4.5rem; align-items: start; }
+    .results-inner { display: flex; flex-direction: column; gap: 2.5rem; }
+    .results-label { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 1rem; }
+    .verdict-grid { display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .verdict-card { background: var(--bg); padding: 1.5rem; }
+    .verdict-metric { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .verdict-val { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem; }
+    .verdict-detail { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .results-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .results-table th { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
+      background: var(--bg2); padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border);
+      text-align: left; border-right: 1px solid var(--border); }
+    .results-table th:last-child { border-right: none; }
+    .results-table td { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--muted); padding: 0.7rem 1.1rem; border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border); }
+    .results-table td:last-child { border-right: none; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.best td { background: var(--teal-light); color: var(--text); }
+
+    /* ── SKILLS ── */
+    .section-skills { padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr; gap: 4.5rem; align-items: start; }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item { background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start; }
+    .learned-num { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem; }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child { color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2); border-right: 1px solid var(--border);
+      white-space: nowrap; width: 120px; }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta { padding: 3.5rem 0; display: flex; justify-content: space-between;
+      align-items: center; border-bottom: 1px solid var(--border); }
+    .cta-text h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem; }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.7rem 1.5rem;
+      font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none; }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-ijet { background: #1a5fa8; color: #fff; }
+    .btn-ijet:hover { background: #0d3d6e; }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer { padding: 1.75rem 5rem; display: flex; justify-content: space-between; align-items: center; }
+    footer p { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted2); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-results, .section-constraints { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .arch-top, .hw-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .section-arch, .section-hw { padding: 3rem 0; }
+      .module-diagram { grid-template-columns: 1fr; }
+      .hw-grid { grid-template-columns: 1fr 1fr; }
+      .ntier-strip { grid-template-columns: 1fr; }
+      .verdict-grid { grid-template-columns: 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a><span class="breadcrumb-sep">/</span>
+      <span>RFID Attendance Monitoring System</span>
+    </div>
+    <div class="hero-eyebrow">C# · Arduino · RFID · IoT · Published Research</div>
+    <h1 class="hero-h1">
+      <strong>RFID Attendance Monitoring</strong><br>
+      with <em>Fraud Prevention</em> Techniques
+    </h1>
+    <p class="hero-desc">
+      A published IEEE/IJET research paper proposing <strong>KUSmartLog</strong> — an RFID-based
+      Attendance Monitoring System for educational institutions integrating a
+      password-protected attendance module to prevent fraud. Implemented with Arduino Uno,
+      MFRC-522 RFID reader, a 16×2 LCD, and a C# .NET N-Tier server application backed
+      by SQL Server. Achieved a <strong>SUS usability score of 71.92</strong> ("Good") and
+      average response time of <strong>1.11 seconds per tag</strong>.
+    </p>
+    <div class="tag-row">
+      <span class="tag">Arduino</span>
+      <span class="tag">RFID · MFRC-522</span>
+      <span class="tag">C# · .NET</span>
+      <span class="tag">SQL Server</span>
+      <span class="tag">N-Tier Architecture</span>
+      <span class="tag">IoT</span>
+      <span class="tag tag-ijet">IJET · 2018</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="meta-key">Hardware</div>
+      <div class="meta-val">Arduino Uno · MFRC-522 · 16×2 LCD · Keypad</div></div>
+    <div class="meta-item"><div class="meta-key">Software</div>
+      <div class="meta-val">C# .NET · Windows Forms · SQL Server 2014</div></div>
+    <div class="meta-item"><div class="meta-key">Architecture</div>
+      <div class="meta-val">N-Tier · Entity · DAL · BOL · GUI</div></div>
+    <div class="meta-item"><div class="meta-key">Results</div>
+      <div class="meta-val">SUS 71.92/100 · Avg. response 1.11s</div></div>
+    <div class="meta-item"><div class="meta-key">Published</div>
+      <div class="meta-val pub">IJET Vol. 7(3) 2018 · pp. 1593–1598 · doi:10.14419/ijet.v7i3.13974</div></div>
+    <div class="meta-item"><div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/Effective-Attendance-Monitoring-System-with-Fraud-Prevention-Technique-for-Educational-Institutions" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://doi.org/10.14419/ijet.v7i3.13974" target="_blank" class="meta-link">IJET Paper ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        Manual, paper-based attendance systems are <strong>unreliable, error-prone, and
+        vulnerable to proxy attendance</strong> — where students mark attendance on behalf of
+        absent peers. RFID-based systems offer an automated alternative, but most prior work
+        focused on simple tag-reading without addressing the core challenge of <strong>fraudulence
+        prevention</strong>. This paper plugs that gap.
+      </p>
+      <p>
+        <strong>KUSmartLog</strong> is an Attendance Monitoring System (AMS) that uses RFID
+        student ID cards for identification, but adds a <strong>password-protected attendance
+        counting module</strong>. A course teacher activates counting by entering a secret
+        password on a keypad; students can only register attendance within that activated
+        window — in front of the teacher — making proxy and out-of-class attendance
+        physically impossible.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        The system was <strong>implemented in a real classroom</strong> at Daffodil
+        International University and evaluated on 30 students using the System Usability
+        Scale (SUS) — achieving an average score of 71.92/100, classified as <em>"Good"</em>
+        (range 71.4–85.5). Performance testing across 4 cable lengths and up to 25 RFID
+        tags yielded an average response time of <strong>1.11 seconds per tag</strong>.
+      </p>
+      <p>
+        Seven formal <strong>security constraints</strong> (c1–c7) were defined and
+        implemented: only the assigned teacher can open attendance; no two courses can run
+        simultaneously; attendance is date-locked; duplicate scans are rejected; and
+        students can only register for enrolled courses. The system enforces every
+        constraint via database validation queries in the Business Object Layer.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 ARCHITECTURE -->
+  <div class="section-arch reveal">
+    <div class="arch-top">
+      <div class="rail-label">02<span>Architecture</span></div>
+      <p class="arch-intro">
+        The system is divided into two physically separate modules communicating
+        over a serial cable at <strong>115,200 bps</strong>. The client module is an embedded
+        system running on Arduino Uno. The server module is a C# .NET application running
+        on a desktop PC, following the <strong>N-Tier architecture pattern</strong> with
+        distinct Entity, DAL, BOL, and GUI layers compiled as separate assemblies.
+      </p>
+    </div>
+
+    <div class="module-diagram">
+      <div class="module-box">
+        <div class="module-label">Client Module — Arduino</div>
+        <div class="module-name">Embedded Hardware Layer</div>
+        <ul class="module-items">
+          <li>MFRC-522 RFID Reader (SPI, SS=pin10)</li>
+          <li>3×4 Matrix Keypad (ADC on A0)</li>
+          <li>16×2 LCD Display (pins 2–7)</li>
+          <li>RGB LED indicators (A2=Red, A3=Green)</li>
+          <li>Buzzer (A4) — audio feedback</li>
+          <li>DigitalID.ino — Arduino C sketch</li>
+          <li>Reads 5-byte RFID tag serial numbers</li>
+          <li>Sends tagID / password over Serial.println()</li>
+        </ul>
+      </div>
+      <div class="module-arrow">
+        <span class="module-arrow-icon">⇄</span>
+        <span class="module-arrow-lbl">Serial<br>115200 bps<br>USB cable</span>
+      </div>
+      <div class="module-box">
+        <div class="module-label">Server Module — C# .NET</div>
+        <div class="module-name">KUSmartLog Application</div>
+        <ul class="module-items">
+          <li>AppGUI.cs — main form (757×500)</li>
+          <li>DataReceivedHandler() — serial listener</li>
+          <li>Login.cs · Add_Student.cs · Add_Course.cs</li>
+          <li>AssignCourse.cs · Attendance.cs</li>
+          <li>Student_List.cs · AdminProfile.cs</li>
+          <li>Operations.cs (BOL) — all DB queries</li>
+          <li>DbConnection.cs (DAL) — SqlConnection</li>
+          <li>Entity.dll — StudentInfo, Courses, UserProfile</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ntier-strip">
+      <div class="ntier-card">
+        <div class="ntier-label">Tier 1 — Presentation</div>
+        <div class="ntier-name">GUI Layer</div>
+        <ul class="ntier-items">
+          <li>AppGUI · Login · Add_Student</li>
+          <li>AssignCourse · Attendance</li>
+          <li>Add_Course · AdminProfile</li>
+        </ul>
+      </div>
+      <div class="ntier-card">
+        <div class="ntier-label">Tier 2 — Business Logic</div>
+        <div class="ntier-name">BOL.dll (Operations.cs)</div>
+        <ul class="ntier-items">
+          <li>IsValidPassword() · TakeAttendance()</li>
+          <li>insertStudentInfo() · insertCourse()</li>
+          <li>IsAssignedToThisCourse() · login()</li>
+        </ul>
+      </div>
+      <div class="ntier-card">
+        <div class="ntier-label">Tier 3 — Data Access</div>
+        <div class="ntier-name">DAL.dll + SQL Server</div>
+        <ul class="ntier-items">
+          <li>DbConnection.cs · ExeNonQuery()</li>
+          <li>StudentInfo · Courses · UserProfile</li>
+          <li>Attendance table · SQL Server 2014</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 HARDWARE COMPONENTS -->
+  <div class="section-hw reveal">
+    <div class="hw-top">
+      <div class="rail-label">03<span>Hardware</span></div>
+      <p class="hw-intro">
+        The client module is built from off-the-shelf components wired to an Arduino Uno.
+        The RFID reader communicates over SPI; the keypad uses a single ADC pin with
+        resistor-ladder voltage division to detect 12 keys (0–9, *, #); and LED indicators
+        provide immediate visual feedback (green = success, red = error) alongside the
+        buzzer and 16-character LCD messages.
+      </p>
+    </div>
+    <div class="hw-grid">
+      <div class="hw-card">
+        <span class="hw-icon">📡</span>
+        <div class="hw-num">HW 01</div>
+        <div class="hw-name">RFID Reader</div>
+        <div class="hw-spec">MFRC-522 · 13.56 MHz</div>
+        <p class="hw-desc">SPI-connected MFRC-522 module reads
+          passive RFID tags at 13.56 MHz. Each student ID card stores a
+          unique 5-byte serial number transmitted to Arduino via
+          <code>rfid.serNum[]</code>. Range: ~5 cm.</p>
+      </div>
+      <div class="hw-card">
+        <span class="hw-icon">🎛️</span>
+        <div class="hw-num">HW 02</div>
+        <div class="hw-name">Microcontroller</div>
+        <div class="hw-spec">Arduino Uno · ATmega328P</div>
+        <p class="hw-desc">Central processing unit of the client module.
+          Runs <code>DigitalID.ino</code> at 115,200 bps serial.
+          Controls RFID, LCD, keypad, LEDs, and buzzer.
+          Communicates with server via USB serial port.</p>
+      </div>
+      <div class="hw-card">
+        <span class="hw-icon">⌨️</span>
+        <div class="hw-num">HW 03</div>
+        <div class="hw-name">Keypad &amp; LCD</div>
+        <div class="hw-spec">3×4 matrix · 16×2 LCD</div>
+        <p class="hw-desc">A single ADC pin (A0) reads the full 3×4 keypad
+          via voltage thresholds (25–938 analog range per key). The 16×2
+          LCD (pins 2–7) displays feedback: "....Welcome....", course names,
+          "Attendance counted!", and error messages.</p>
+      </div>
+      <div class="hw-card">
+        <span class="hw-icon">💡</span>
+        <div class="hw-num">HW 04</div>
+        <div class="hw-name">LED &amp; Buzzer</div>
+        <div class="hw-spec">RGB LED (A2/A3) · Digital Buzzer (A4)</div>
+        <p class="hw-desc">Green LED (A3) + buzzer beep on successful
+          attendance count. Red LED (A2) + 3× buzzer pulses for errors
+          (wrong password, duplicate scan, not enrolled).
+          Both default HIGH (off) and pulled LOW to activate.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 SECURITY CONSTRAINTS -->
+  <div class="section-constraints reveal">
+    <div class="rail-label">04<span>Security</span></div>
+    <ul class="constraint-list">
+      <li class="constraint-item">
+        <span class="constraint-id">c1</span>
+        <span class="constraint-text">
+          <strong>Teacher-only activation</strong> — Each course has a unique secret password set by
+          its teacher via the admin panel. No password, no attendance counting. The password is
+          never exposed to students.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c2</span>
+        <span class="constraint-text">
+          <strong>Single course at a time</strong> — If any course is already active in <code>runningCourse</code>,
+          a different password attempt returns "Another course is running now." — preventing
+          two courses from running simultaneously on the same reader.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c3</span>
+        <span class="constraint-text">
+          <strong>Within-class-time only</strong> — Attendance is only accepted between the first
+          (start) and second (stop) entry of the password. Students arriving before or after
+          the class window cannot register.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c4</span>
+        <span class="constraint-text">
+          <strong>Date-locked</strong> — The <code>attendence_date</code> column is set server-side
+          at the time of counting. The admin panel is password-protected, so students cannot
+          backdate or future-date an attendance record.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c5</span>
+        <span class="constraint-text">
+          <strong>Physical presence enforced</strong> — The RFID reader is placed beside the
+          teacher's desk. Attendance is given in front of the teacher, making it physically
+          impossible to scan multiple cards simultaneously for other students.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c6</span>
+        <span class="constraint-text">
+          <strong>Enrollment check</strong> — <code>IsAssignedToThisCourse(tagID, runningCourse)</code>
+          queries the database before accepting any scan. Unregistered students receive
+          "You are not assigned to this course!" on the LCD.
+        </span>
+      </li>
+      <li class="constraint-item">
+        <span class="constraint-id">c7</span>
+        <span class="constraint-text">
+          <strong>Duplicate prevention</strong> — <code>TakeAttendance()</code> checks for an existing
+          record before inserting. A second scan from the same student returns
+          "Duplicate entry! Attendance already counted!" and is rejected.
+        </span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 05 KEY RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">05<span>Key Results</span></div>
+    <div class="results-inner">
+      <div>
+        <div class="results-label">Performance &amp; Usability Verdict</div>
+        <div class="verdict-grid">
+          <div class="verdict-card">
+            <div class="verdict-metric">SUS Usability Score</div>
+            <div class="verdict-val">71.92 / 100 — "Good"</div>
+            <p class="verdict-detail">
+              Tested on <strong>30 random students</strong> with the System Usability
+              Scale (10-question questionnaire, scored 1–5). Average SUS = 71.92,
+              standard deviation = 6.21 — both within the "Good" band
+              (71.4–85.5 / SD &lt; 11.6). Best score: 82.5, worst: 60.
+            </p>
+          </div>
+          <div class="verdict-card">
+            <div class="verdict-metric">Average Response Time</div>
+            <div class="verdict-val">1.11 seconds per RFID tag</div>
+            <p class="verdict-detail">
+              Tested across <strong>4 cable lengths</strong> (1.5m, 3m, 4.5m, 6m) and
+              <strong>6 tag counts</strong> (1, 5, 10, 15, 20, 25). Average per-tag
+              response times: 0.87s (1.5m), 1.02s (3m), 1.10s (4.5m), 1.45s (6m).
+              All well below the traditional paper-based system's processing time.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="results-label">Response Time by Cable Length &amp; Tag Count</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Cable (m)</th>
+              <th>1 tag (s)</th>
+              <th>5 tags (s)</th>
+              <th>10 tags (s)</th>
+              <th>15 tags (s)</th>
+              <th>20 tags (s)</th>
+              <th>25 tags (s)</th>
+              <th>Avg (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="best"><td>1.5</td><td>0.64</td><td>0.78</td><td>0.85</td><td>0.84</td><td>0.92</td><td>1.18</td><td>0.87</td></tr>
+            <tr><td>3.0</td><td>0.55</td><td>0.80</td><td>0.88</td><td>1.10</td><td>1.23</td><td>1.56</td><td>1.02</td></tr>
+            <tr><td>4.5</td><td>0.68</td><td>0.84</td><td>0.98</td><td>1.12</td><td>1.36</td><td>1.60</td><td>1.10</td></tr>
+            <tr><td>6.0</td><td>0.90</td><td>1.40</td><td>1.36</td><td>1.57</td><td>1.69</td><td>1.80</td><td>1.45</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">06<span>Contributions</span></div>
+    <ul class="learned-list">
+      <li class="learned-item"><span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Fraud prevention framework</strong> — Defined and implemented the set
+          C = {c1…c7} of formal security constraints, each enforced at the database query
+          level in the BOL rather than UI, making them tamper-resistant.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Arduino embedded system</strong> — Programmed the full client module in
+          Arduino C: SPI RFID card reading, analog ADC keypad decoding with 12-key
+          voltage thresholds, 16×2 LCD output, RGB LED and buzzer feedback, and
+          bi-directional serial communication at 115,200 bps.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>N-Tier C# .NET server application</strong> — Built the full KUSmartLog
+          desktop app with 4 layers (Entity / DAL / BOL / GUI), 8 Windows Forms screens,
+          serial port listener with <code>DataReceivedHandler</code>, and a live-updating
+          DataGridView displaying today's attendance in real time.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Real-world deployment &amp; SUS evaluation</strong> — Deployed and tested
+          in a live university classroom. Administered SUS usability questionnaires to 30
+          students, calculated per-response SUS scores, and performed cable-length vs.
+          tag-count response time analysis across 24 test configurations.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Published research</strong> — First-authored the full paper including
+          system design, algorithm pseudocode, constraint formalisation, usability testing
+          methodology, and performance analysis, accepted in the
+          <em>International Journal of Engineering &amp; Technology</em> (IJET), Vol. 7(3), 2018.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr><td>MCU</td><td>Arduino Uno · ATmega328P · Arduino IDE 1.8.5</td></tr>
+        <tr><td>RFID</td><td>MFRC-522 · 13.56 MHz · SPI · RFID.h library</td></tr>
+        <tr><td>Language</td><td>C (Arduino sketch) · C# .NET Framework</td></tr>
+        <tr><td>UI Framework</td><td>Windows Forms · Visual Studio 2015</td></tr>
+        <tr><td>Architecture</td><td>N-Tier · Entity.dll · DAL.dll · BOL.dll · GUI</td></tr>
+        <tr><td>Database</td><td>SQL Server 2014 Express · SqlCommand · local .mdf</td></tr>
+        <tr><td>Serial</td><td>System.IO.Ports.SerialPort · 115,200 bps · DataReceivedHandler</td></tr>
+        <tr><td>Usability</td><td>System Usability Scale (SUS) · 30 participants · 10-question</td></tr>
+        <tr><td>Published</td><td>IJET Vol. 7 Issue 3 · 2018 · pp. 1593–1598 · doi:10.14419/ijet.v7i3.13974</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full paper &amp; source code</h3>
+      <p>Published in IJET 2018 · Full C# solution and Arduino sketch on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/Effective-Attendance-Monitoring-System-with-Fraud-Prevention-Technique-for-Educational-Institutions" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://doi.org/10.14419/ijet.v7i3.13974" target="_blank" class="btn btn-ijet">IJET Paper ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
