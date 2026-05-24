@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Happiness Report — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid; grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light); color: var(--teal);
+    }
+    .tag-cuny { border-color: #4a2c8a; background: #f3eeff; color: #4a2c8a; }
+    .tag-r    { border-color: #276dc3; background: #edf4ff; color: #276dc3; }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-val.cuny { color: #4a2c8a; }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── DATA SECTION ── */
+    .section-data {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .data-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem; align-items: start;
+    }
+    .data-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 600; color: var(--navy); line-height: 1.2;
+    }
+    .data-sub { font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-top: 0.35rem; }
+
+    /* variable cards grid */
+    .var-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .var-card { background: var(--bg); padding: 1.5rem 1.5rem 1.75rem; }
+    .var-type {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .var-type.dep { color: #c4192d; }
+    .var-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .var-desc { font-size: 0.82rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    /* dataset stat strip */
+    .data-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .data-stat { background: var(--bg2); padding: 1.25rem 1.5rem; }
+    .data-stat-val {
+      font-family: 'Inter', sans-serif; font-size: 1.8rem;
+      font-weight: 600; color: var(--teal); line-height: 1; margin-bottom: 0.3rem;
+    }
+    .data-stat-val span { font-size: 1.1rem; }
+    .data-stat-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* ── PREDICTORS (simple regression cards) ── */
+    .section-predictors {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .pred-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem;
+    }
+    .pred-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .pred-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .pred-card { background: var(--bg); padding: 1.75rem 1.5rem 2rem; }
+    .pred-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .pred-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .pred-eq {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.66rem;
+      color: var(--teal); background: var(--teal-light);
+      border: 1px solid var(--teal-mid);
+      padding: 0.35rem 0.6rem; margin-bottom: 0.85rem;
+      display: inline-block; line-height: 1.55;
+    }
+    .pred-r2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--navy); background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.5rem; margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+    .pred-desc { font-size: 0.83rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .pred-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; margin-top: 0.85rem;
+      border: 1px solid var(--teal-mid); background: var(--teal-light); color: var(--teal);
+    }
+    .pred-badge.ns { border-color: #c4192d; background: #fdf0f2; color: #c4192d; }
+    .pred-badge.best { border-color: #0b2545; background: #0b2545; color: #fff; }
+
+    /* ── RESULTS ── */
+    .section-results {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .results-inner { display: flex; flex-direction: column; gap: 2.5rem; }
+    .results-block-label {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 1rem;
+    }
+    .verdict-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .verdict-card { background: var(--bg); padding: 1.5rem; }
+    .verdict-metric {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .verdict-winner {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .verdict-detail { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    .results-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .results-table th {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
+      background: var(--bg2); padding: 0.8rem 1.1rem;
+      border-bottom: 1px solid var(--border); text-align: left;
+      border-right: 1px solid var(--border);
+    }
+    .results-table th:last-child { border-right: none; }
+    .results-table td {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--muted); padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .results-table td:last-child { border-right: none; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.best td { background: var(--teal-light); color: var(--text); }
+    .results-table tr.best td:first-child { color: var(--teal); font-weight: 600; }
+    .results-table td.win { color: var(--teal); font-weight: 600; }
+    .results-table td.ns  { color: #c4192d; }
+
+    /* hypothesis test block */
+    .hyp-block {
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .hyp-header {
+      background: var(--navy); padding: 1rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: rgba(178,221,226,0.7); letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    .hyp-body { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .hyp-eq {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      color: var(--navy); line-height: 2; background: var(--bg2);
+      padding: 1rem 1.25rem; border: 1px solid var(--border);
+    }
+    .hyp-eq .h0 { color: var(--muted); }
+    .hyp-eq .ha { color: var(--teal); font-weight: 600; }
+    .hyp-result { display: flex; flex-direction: column; gap: 0.75rem; }
+    .hyp-stat {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+    }
+    .hyp-stat:last-child { border-bottom: none; }
+    .hyp-stat-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .hyp-stat-val {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      color: var(--navy); font-weight: 600;
+    }
+    .hyp-stat-val.reject { color: var(--teal); }
+
+    /* ── SKILLS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 110px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary  { background: var(--navy); color: #fff; }
+    .btn-primary:hover  { background: var(--teal); }
+    .btn-rpubs    { background: #4a2c8a; color: #fff; }
+    .btn-rpubs:hover    { background: #361e66; }
+    .btn-outline  { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover  { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .section-results { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .data-top, .pred-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .section-data, .section-predictors { padding: 3rem 0; }
+      .var-grid, .pred-grid { grid-template-columns: 1fr 1fr; }
+      .data-stats { grid-template-columns: 1fr 1fr; }
+      .verdict-grid, .hyp-body { grid-template-columns: 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>World Happiness Report</span>
+    </div>
+    <div class="hero-eyebrow">R · Statistics · CUNY DATA 606</div>
+    <h1 class="hero-h1">
+      <strong>World Happiness Report</strong> —<br>
+      <em>Economic, Social &amp; Governance</em> Influences
+    </h1>
+    <p class="hero-desc">
+      A statistical analysis of the World Happiness Report dataset (1,969 observations across
+      163 countries, 2019–2024) investigating how GDP, social support, healthy life expectancy,
+      freedom, generosity, and perceptions of corruption predict national happiness scores.
+      Multiple linear regression and permutation-based hypothesis testing reveal that
+      <strong>71% of happiness variation</strong> is explained by economic and social factors,
+      with high-income nations scoring significantly higher than low-income peers.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-r">R</span>
+      <span class="tag">Multiple Regression</span>
+      <span class="tag">Hypothesis Testing</span>
+      <span class="tag">ggplot2</span>
+      <span class="tag">World Happiness Report</span>
+      <span class="tag">TSPLIB</span>
+      <span class="tag tag-cuny">CUNY DATA 606</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">R · R Markdown</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Dataset</div>
+      <div class="meta-val">World Happiness Report · 2019–2024</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Methods</div>
+      <div class="meta-val">Simple &amp; Multiple Linear Regression · Permutation Test</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Course</div>
+      <div class="meta-val cuny">DATA 606 · CUNY SPS · Final Project</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Data Source</div>
+      <div class="meta-val">worldhappiness.report · Gallup World Poll</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/World-Happiness-Report" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://rpubs.com/nafees19/1434954" target="_blank" class="meta-link">RPubs Report ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        The <strong>World Happiness Report</strong> is an annual publication by the
+        Sustainable Development Solutions Network (SDSN), based on Gallup World Poll
+        surveys. Countries self-report happiness as a <strong>Cantril Ladder score</strong>
+        — respondents rate their current life on a scale from 0 (worst possible) to
+        10 (best possible). The report also attributes each country's score to six
+        contributing factors, enabling both descriptive and inferential analysis.
+      </p>
+      <p>
+        This project addresses two research questions: <strong>(1)</strong> How do
+        economic, social, and governance factors jointly influence national happiness
+        scores? <strong>(2)</strong> Is there a statistically significant difference
+        in happiness between high-income and low-income countries? The dataset spans
+        163 countries across six years (2019–2024) with 1,969 complete observations
+        after cleaning.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        The analytical approach moves from exploratory visualization (ggpairs
+        correlation matrix) through six simple linear regressions — one per predictor
+        — each with full model diagnostics (residuals vs. fitted, Q-Q plot, histogram).
+        These single-predictor models establish baselines before fitting a
+        <strong>full multiple regression model</strong> including all six factors plus
+        a Region dummy variable, which achieves an adjusted R² of 0.7585.
+      </p>
+      <p>
+        For the hypothesis test, countries are split into <strong>High</strong> and
+        <strong>Low</strong> income groups by median GDP. A permutation-based test
+        evaluates whether the observed difference in mean happiness scores
+        (Δ = 1.31 points) could plausibly arise by chance. The extremely small
+        p-value strongly rejects the null hypothesis of equal group means.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 DATA -->
+  <div class="section-data reveal">
+    <div class="data-top">
+      <div class="rail-label">02<span>Dataset</span></div>
+      <div>
+        <div class="data-heading">World Happiness Report Data</div>
+        <div class="data-sub">
+          1,969 observations × 14 variables · 163 countries · 2019–2024 ·
+          Source: worldhappiness.report/data-sharing
+        </div>
+      </div>
+    </div>
+
+    <!-- dataset stats -->
+    <div class="data-stats" style="margin-bottom:2rem;">
+      <div class="data-stat">
+        <div class="data-stat-val">1<span>,969</span></div>
+        <div class="data-stat-label">Observations</div>
+      </div>
+      <div class="data-stat">
+        <div class="data-stat-val">163</div>
+        <div class="data-stat-label">Countries</div>
+      </div>
+      <div class="data-stat">
+        <div class="data-stat-val">6</div>
+        <div class="data-stat-label">Years (2019–2024)</div>
+      </div>
+      <div class="data-stat">
+        <div class="data-stat-val">6</div>
+        <div class="data-stat-label">Predictors</div>
+      </div>
+    </div>
+
+    <!-- variable cards -->
+    <div class="var-grid">
+      <div class="var-card">
+        <div class="var-type dep">Dependent Variable</div>
+        <div class="var-name">Ladder Score (Happiness)</div>
+        <p class="var-desc">Self-assessed life rating on the Cantril Ladder: 0 = worst possible life, 10 = best possible life. Global range in dataset: 1.72 (Afghanistan, 2023) to 7.74 (Finland, 2024).</p>
+      </div>
+      <div class="var-card">
+        <div class="var-type">Economic</div>
+        <div class="var-name">Log GDP per Capita</div>
+        <p class="var-desc">Log-transformed GDP per capita, scaled to the happiness score contribution. Measures how much each country's economic output per person contributes to its Ladder score.</p>
+      </div>
+      <div class="var-card">
+        <div class="var-type">Social</div>
+        <div class="var-name">Social Support</div>
+        <p class="var-desc">Survey response to: "If you were in trouble, do you have relatives or friends you can count on?" Reflects the strength of personal support networks within a country.</p>
+      </div>
+      <div class="var-card">
+        <div class="var-type">Health</div>
+        <div class="var-name">Healthy Life Expectancy</div>
+        <p class="var-desc">Number of years an individual is expected to live in good health, combining length and quality of life using WHO data and Gallup polling on perceived health.</p>
+      </div>
+      <div class="var-card">
+        <div class="var-type">Governance</div>
+        <div class="var-name">Freedom to Make Life Choices</div>
+        <p class="var-desc">National average of responses to: "Are you satisfied or dissatisfied with your freedom to choose what you do with your life?" Covers personal, political, and civil freedoms.</p>
+      </div>
+      <div class="var-card">
+        <div class="var-type">Governance</div>
+        <div class="var-name">Perceptions of Corruption</div>
+        <p class="var-desc">Average of two binary questions on perceived government and business corruption. Higher values indicate lower corruption perception — a country is seen as cleaner.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 SIMPLE REGRESSION PREDICTORS -->
+  <div class="section-predictors reveal">
+    <div class="pred-top">
+      <div class="rail-label">03<span>Simple Regressions</span></div>
+      <p class="pred-intro">
+        Six simple linear regression models were fitted — one predictor at a time —
+        to isolate each factor's individual relationship with the Happiness Score.
+        Each model was validated with full diagnostics: residuals vs. fitted values
+        (linearity), histogram and Q-Q plot of residuals (normality), and visual
+        inspection for heteroscedasticity. All significant predictors meet
+        regression conditions. <strong>Generosity</strong> is the sole non-significant
+        predictor (p = 0.209, R² ≈ 0.002).
+      </p>
+    </div>
+    <div class="pred-grid">
+
+      <div class="pred-card">
+        <div class="pred-num">GDP</div>
+        <div class="pred-name">Log GDP per Capita</div>
+        <div class="pred-eq">Ŷ = 3.499 + 1.668 × GDP</div>
+        <div class="pred-r2">R² = 0.4742 &nbsp;|&nbsp; F = 781.1 &nbsp;|&nbsp; p &lt; 2e-16</div>
+        <p class="pred-desc">
+          For every one-unit increase in GDP contribution, the Happiness Score rises
+          by 1.668 points. GDP explains 47.42% of happiness variation on its own —
+          the strongest single economic predictor. Residuals are evenly distributed
+          and near-normal, confirming model validity.
+        </p>
+        <span class="pred-badge best">Highest R² (single predictor)</span>
+      </div>
+
+      <div class="pred-card">
+        <div class="pred-num">Social Support</div>
+        <div class="pred-name">Social Support</div>
+        <div class="pred-eq">Ŷ = 3.188 + 2.180 × SocialSupport</div>
+        <div class="pred-r2">R² = 0.4737 &nbsp;|&nbsp; F = 779.5 &nbsp;|&nbsp; p &lt; 2e-16</div>
+        <p class="pred-desc">
+          Social support explains 47.37% of happiness variation — nearly identical
+          to GDP — underscoring that social infrastructure matters as much as
+          economic strength. A one-unit increase corresponds to 2.180 points of
+          additional happiness score.
+        </p>
+        <span class="pred-badge">Significant ★★★</span>
+      </div>
+
+      <div class="pred-card">
+        <div class="pred-num">Health</div>
+        <div class="pred-name">Healthy Life Expectancy</div>
+        <div class="pred-eq">Ŷ = 3.736 + 3.314 × Health</div>
+        <div class="pred-r2">R² = 0.4327 &nbsp;|&nbsp; F = 660.4 &nbsp;|&nbsp; p &lt; 2e-16</div>
+        <p class="pred-desc">
+          Health explains 43.27% of happiness variation with the steepest slope
+          among the significant predictors (3.314 per unit). The Q-Q plot shows
+          slight deviation at the lower tail, suggesting some left skew for
+          low-health countries.
+        </p>
+        <span class="pred-badge">Significant ★★★</span>
+      </div>
+
+      <div class="pred-card">
+        <div class="pred-num">Freedom</div>
+        <div class="pred-name">Freedom to Make Life Choices</div>
+        <div class="pred-eq">Ŷ = 3.629 + 3.383 × Freedom</div>
+        <div class="pred-r2">R² = 0.2933 &nbsp;|&nbsp; F = 359.4 &nbsp;|&nbsp; p &lt; 2e-16</div>
+        <p class="pred-desc">
+          Freedom explains 29.33% of happiness — significant but weaker than GDP,
+          social support, and health individually. The residuals vs. fitted plot
+          shows modest heteroscedasticity at low fitted values, reflecting
+          greater variability in less-free countries.
+        </p>
+        <span class="pred-badge">Significant ★★★</span>
+      </div>
+
+      <div class="pred-card">
+        <div class="pred-num">Corruption</div>
+        <div class="pred-name">Perceptions of Corruption</div>
+        <div class="pred-eq">Ŷ = 4.952 + 4.040 × Corruption</div>
+        <div class="pred-r2">R² = 0.1867 &nbsp;|&nbsp; F = 198.8 &nbsp;|&nbsp; p &lt; 2e-16</div>
+        <p class="pred-desc">
+          Higher corruption perception scores (less corrupt) associate with
+          meaningfully higher happiness scores. R² = 0.19 is the weakest of the
+          significant predictors, but the steep slope (4.040) indicates
+          corruption has a strong directional impact when it varies.
+        </p>
+        <span class="pred-badge">Significant ★★★</span>
+      </div>
+
+      <div class="pred-card">
+        <div class="pred-num">Generosity</div>
+        <div class="pred-name">Generosity</div>
+        <div class="pred-eq">Ŷ = 5.450 + 0.553 × Generosity</div>
+        <div class="pred-r2">R² = 0.0018 &nbsp;|&nbsp; F = 1.583 &nbsp;|&nbsp; p = 0.209</div>
+        <p class="pred-desc">
+          Generosity is the only predictor that fails to reach statistical
+          significance in simple regression (p = 0.209). It explains just 0.18%
+          of happiness variation. However, it remains significant in the full
+          multiple regression model (p &lt; 0.001), suggesting its effect is
+          masked by collinear predictors in isolation.
+        </p>
+        <span class="pred-badge ns">Not Significant (simple model)</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 KEY RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">04<span>Key Results</span></div>
+    <div class="results-inner">
+
+      <!-- verdict cards -->
+      <div>
+        <div class="results-block-label">Overall Findings</div>
+        <div class="verdict-grid">
+          <div class="verdict-card">
+            <div class="verdict-metric">Multiple Regression — Adj R²</div>
+            <div class="verdict-winner">0.7585 with Region</div>
+            <p class="verdict-detail">
+              The full model (GDP + SocialSupport + Health + Freedom + Generosity +
+              Corruption + Region) explains <strong>75.85%</strong> of happiness score
+              variation. All six predictors are statistically significant
+              (p &lt; 0.001). Adding a simplified Region dummy (Eastern Europe,
+              Latin America, North America, Western Europe) adds a further 7.03%
+              improvement over the non-region model.
+            </p>
+          </div>
+          <div class="verdict-card">
+            <div class="verdict-metric">Hypothesis Test — Income vs Happiness</div>
+            <div class="verdict-winner">Reject H₀ — p ≈ 0</div>
+            <p class="verdict-detail">
+              A permutation test comparing High vs. Low income groups (split by
+              median GDP, n = 433 and 435 respectively) finds a statistically
+              significant difference: <strong>High group mean = 6.19</strong>,
+              <strong>Low group mean = 4.88</strong>, Δ = 1.31 points.
+              The p-value from the null distribution is effectively zero —
+              this gap cannot plausibly arise by chance.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- sequential R² improvement table -->
+      <div>
+        <div class="results-block-label">Sequential R² Improvement — Adding Predictors</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Adj R²</th>
+              <th>Improvement</th>
+              <th>Key Insight</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GDP only</td>
+              <td>0.4736</td>
+              <td>—</td>
+              <td>Baseline economic model</td>
+            </tr>
+            <tr>
+              <td>+ Health</td>
+              <td>0.5985</td>
+              <td class="win">+26.37%</td>
+              <td>Largest single-predictor gain</td>
+            </tr>
+            <tr>
+              <td>+ Freedom</td>
+              <td>0.6590</td>
+              <td class="win">+10.10%</td>
+              <td>Governance adds significant power</td>
+            </tr>
+            <tr>
+              <td>+ Social Support</td>
+              <td>0.6840</td>
+              <td>+3.79%</td>
+              <td>Partial overlap with GDP/Health</td>
+            </tr>
+            <tr>
+              <td>+ Generosity</td>
+              <td>0.7010</td>
+              <td>+2.49%</td>
+              <td>Becomes significant in MLR context</td>
+            </tr>
+            <tr>
+              <td>+ Corruption</td>
+              <td>0.7081</td>
+              <td>+1.01%</td>
+              <td>Incremental governance signal</td>
+            </tr>
+            <tr class="best">
+              <td>+ Region (simplified)</td>
+              <td>0.7579</td>
+              <td class="win">+7.03%</td>
+              <td>Cultural/geographic context matters</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MLR coefficients table -->
+      <div>
+        <div class="results-block-label">Multiple Regression Coefficients — Full Model</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Predictor</th>
+              <th>Estimate</th>
+              <th>Std Error</th>
+              <th>t-value</th>
+              <th>Significance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>(Intercept)</td><td>2.299</td><td>0.093</td><td>24.59</td><td class="win">***</td></tr>
+            <tr><td>GDP</td><td>0.656</td><td>0.066</td><td>9.978</td><td class="win">***</td></tr>
+            <tr><td>Social Support</td><td>0.636</td><td>0.079</td><td>8.094</td><td class="win">***</td></tr>
+            <tr><td>Health</td><td>1.127</td><td>0.123</td><td>9.174</td><td class="win">***</td></tr>
+            <tr><td>Freedom</td><td>0.862</td><td>0.134</td><td>6.456</td><td class="win">***</td></tr>
+            <tr><td>Generosity</td><td>1.719</td><td>0.246</td><td>6.986</td><td class="win">***</td></tr>
+            <tr><td>Corruption</td><td>1.047</td><td>0.210</td><td>4.983</td><td class="win">***</td></tr>
+            <tr><td>Region: Latin America</td><td>0.688</td><td>0.076</td><td>9.113</td><td class="win">***</td></tr>
+            <tr><td>Region: Eastern Europe</td><td>0.443</td><td>0.083</td><td>5.321</td><td class="win">***</td></tr>
+            <tr><td>Region: Western Europe</td><td>0.615</td><td>0.100</td><td>6.169</td><td class="win">***</td></tr>
+            <tr><td>Region: North America</td><td>0.650</td><td>0.180</td><td>3.622</td><td class="win">***</td></tr>
+            <tr><td>Region: Asia-Pacific</td><td>−0.028</td><td>0.065</td><td>−0.430</td><td class="ns">n.s.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- hypothesis test block -->
+      <div>
+        <div class="results-block-label">Hypothesis Test — Income Group vs Happiness</div>
+        <div class="hyp-block">
+          <div class="hyp-header">Permutation Test · α = 0.05 · Method: Infer Package (R)</div>
+          <div class="hyp-body">
+            <div class="hyp-eq">
+              <div class="h0">H₀: μ_high = μ_low</div>
+              <div class="h0">(No significant difference in happiness scores between</div>
+              <div class="h0">high-income and low-income countries)</div>
+              <br>
+              <div class="ha">Hₐ: μ_high ≠ μ_low</div>
+              <div class="ha">(Significant difference exists)</div>
+            </div>
+            <div class="hyp-result">
+              <div class="hyp-stat">
+                <span class="hyp-stat-label">High GDP group mean</span>
+                <span class="hyp-stat-val">6.19 &nbsp;(n = 433)</span>
+              </div>
+              <div class="hyp-stat">
+                <span class="hyp-stat-label">Low GDP group mean</span>
+                <span class="hyp-stat-val">4.88 &nbsp;(n = 435)</span>
+              </div>
+              <div class="hyp-stat">
+                <span class="hyp-stat-label">Observed difference (Δ)</span>
+                <span class="hyp-stat-val">1.31 points</span>
+              </div>
+              <div class="hyp-stat">
+                <span class="hyp-stat-label">p-value (permutation)</span>
+                <span class="hyp-stat-val reject">≈ 0 &nbsp;→ Reject H₀</span>
+              </div>
+              <div class="hyp-stat">
+                <span class="hyp-stat-label">Conclusion</span>
+                <span class="hyp-stat-val reject">Significant difference confirmed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 05 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">05<span>Contributions</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Exploratory data analysis</strong> — produced a full ggpairs
+          correlation matrix across all six predictors and the happiness score,
+          identifying GDP (0.689), Social Support (0.688), and Health (0.658) as
+          the strongest individual correlates, and establishing that Generosity
+          (0.043) is near-zero correlated with score.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Six simple linear regression models</strong> — each with full
+          diagnostic plots (residuals vs. fitted, histogram, Q-Q) using broom's
+          <code>augment()</code> and patchwork for 2×2 grids. Conditions for
+          linearity, normality, and equal variance confirmed for all five
+          significant predictors.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Multiple linear regression with Region</strong> — added a
+          categorical Region variable (7 levels, later simplified to 5 via
+          dimensionality reduction) using dummy coding. Achieved Adj R² = 0.7579.
+          Showed that Region adds 7.03% R² improvement beyond the six core predictors.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Sequential predictor analysis</strong> — built an incremental R²
+          improvement table showing the marginal contribution of each predictor
+          when added to the model, demonstrating that Health (+26.37%) and Freedom
+          (+10.10%) add the most explanatory power after GDP.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Permutation-based hypothesis test</strong> — using the infer
+          package, split countries by median GDP into High/Low income groups and
+          tested H₀: μ_high = μ_low. Generated a null distribution via permutation
+          and computed the p-value, confirming a statistically significant happiness
+          gap of 1.31 points between groups.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>R · R Markdown</td></tr>
+        <tr><td>Packages</td><td>tidyverse · ggplot2 · GGally · broom · patchwork · glmnet · infer · readxl</td></tr>
+        <tr><td>Dataset</td><td>World Happiness Report 2019–2024 · 1,969 obs × 14 vars</td></tr>
+        <tr><td>Source</td><td>worldhappiness.report/data-sharing · Gallup World Poll · SDSN</td></tr>
+        <tr><td>Models</td><td>6× Simple Linear Regression · Multiple Linear Regression + Region</td></tr>
+        <tr><td>Inference</td><td>Permutation test (infer) · High/Low income group split by median GDP</td></tr>
+        <tr><td>Diagnostics</td><td>Residuals vs Fitted · Histogram of Residuals · Q-Q Plot (per model)</td></tr>
+        <tr><td>Course</td><td>DATA 606 · Data Analysis · CUNY School of Professional Studies · 2024</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full analysis</h3>
+      <p>Full R Markdown report on RPubs · source code on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/World-Happiness-Report" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://rpubs.com/nafees19/1434954" target="_blank" class="btn btn-rpubs">RPubs Report ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
