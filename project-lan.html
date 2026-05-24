@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAN Communication Software — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f9fb;
+      --navy:       #0b2545;
+      --teal:       #0e7c86;
+      --teal-light: #e6f4f5;
+      --teal-mid:   #b2dde2;
+      --text:       #1a2332;
+      --muted:      #5a6a7a;
+      --muted2:     #8a9aaa;
+      --border:     #dde5ed;
+      --border2:    #c8d5e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5rem; height: 64px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: var(--navy); letter-spacing: 0.02em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+    .nav-right a {
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-right a:hover { color: var(--teal); }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top: 64px;
+      display: grid; grid-template-columns: 1fr 320px;
+      border-bottom: 1px solid var(--border);
+      min-height: 58vh;
+    }
+    .hero-main {
+      padding: 5rem 5rem 4.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      border-right: 1px solid var(--border);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted2); letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 3.5rem;
+    }
+    .breadcrumb a { color: var(--teal); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--border2); }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--teal); }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--navy);
+      line-height: 1.1; letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-h1 strong { font-weight: 600; }
+    .hero-h1 em { color: var(--teal); font-style: italic; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted); font-weight: 300;
+      max-width: 560px; line-height: 1.85; margin-bottom: 2.25rem;
+    }
+    .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--teal-mid);
+      background: var(--teal-light); color: var(--teal);
+    }
+    .tag-cs { border-color: #5a2d8c; background: #f3eeff; color: #5a2d8c; }
+
+    /* right meta column */
+    .hero-meta {
+      padding: 5rem 2.5rem 4.5rem;
+      background: var(--bg2);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meta-item { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .meta-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--muted2); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .meta-val { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: var(--text); }
+    .meta-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+    .meta-link {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal); text-decoration: none; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+    }
+    .meta-link:hover { opacity: 0.65; }
+
+    /* ── PAGE BODY ── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 0 5rem; }
+
+    .rail-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      padding-top: 0.3rem;
+    }
+    .rail-label span { display: block; color: var(--muted2); font-size: 0.58rem; margin-top: 0.3rem; }
+
+    /* ── ABOUT ── */
+    .section-about {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .prose p {
+      font-size: 0.925rem; color: var(--muted); font-weight: 300;
+      line-height: 1.9; margin-bottom: 1rem;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* ── ARCHITECTURE ── */
+    .section-arch {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .arch-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem; align-items: start;
+    }
+    .arch-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      background: var(--navy);
+      padding: 2.5rem 3rem;
+      display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr;
+      gap: 0; align-items: center;
+    }
+    .arch-tier {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(178,221,226,0.18);
+      padding: 1.5rem 1.25rem;
+    }
+    .arch-tier-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: rgba(178,221,226,0.5); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .arch-tier-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 600; color: #fff; margin-bottom: 0.75rem;
+    }
+    .arch-tier-items { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+    .arch-tier-items li {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: rgba(178,221,226,0.65); padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(178,221,226,0.08);
+    }
+    .arch-tier-items li:last-child { border-bottom: none; }
+    .arch-arrow {
+      display: flex; align-items: center; justify-content: center;
+      color: var(--teal); font-size: 1.1rem;
+    }
+    .arch-arrow span {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+      color: rgba(14,124,134,0.5); text-align: center; line-height: 1.4;
+      margin-top: 0.25rem;
+    }
+
+    /* Network diagram below architecture */
+    .network-diagram {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 2rem 3rem; margin-top: 1px;
+      display: grid; grid-template-columns: 1fr 60px 120px 60px 1fr;
+      gap: 0; align-items: center;
+    }
+    .net-node {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; text-align: center;
+    }
+    .net-node-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .net-node-val {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: var(--teal);
+    }
+    .net-arrow {
+      text-align: center; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; color: var(--muted2);
+    }
+    .net-center {
+      background: var(--navy); padding: 1rem 0.75rem; text-align: center;
+    }
+    .net-center-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+      color: rgba(178,221,226,0.6); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .net-center-val {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--teal-mid);
+    }
+
+    /* ── FEATURES (4-card grid) ── */
+    .section-features {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .feat-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem;
+    }
+    .feat-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .feat-card { background: var(--bg); padding: 1.75rem 1.5rem 2rem; }
+    .feat-icon {
+      font-size: 1.4rem; margin-bottom: 0.75rem; display: block;
+    }
+    .feat-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .feat-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.5rem;
+    }
+    .feat-desc { font-size: 0.85rem; color: var(--muted); font-weight: 300; line-height: 1.65; }
+    .feat-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; margin-top: 0.85rem;
+      border: 1px solid var(--teal-mid); background: var(--teal-light); color: var(--teal);
+    }
+
+    /* ── IMPLEMENTATION FLOW ── */
+    .section-impl {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .impl-top {
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; margin-bottom: 2.5rem; align-items: start;
+    }
+    .impl-intro { font-size: 0.925rem; color: var(--muted); font-weight: 300; line-height: 1.85; }
+
+    /* code panel + description grid */
+    .impl-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 1px;
+    }
+    .impl-grid + .impl-grid { margin-top: 1px; }
+    .code-panel {
+      background: var(--navy); padding: 1.75rem 2rem;
+    }
+    .code-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+      color: rgba(178,221,226,0.45); letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .code-block {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      line-height: 1.9; color: #c8dde9; white-space: pre;
+    }
+    .code-block .kw  { color: #7ecfd8; }
+    .code-block .cm  { color: rgba(178,221,226,0.38); font-style: italic; }
+    .code-block .hi  { color: #fff; font-weight: 600; }
+    .code-block .str { color: #b2dde2; }
+    .info-panel {
+      background: var(--bg); padding: 1.75rem 2rem;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .info-heading {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.2rem;
+    }
+    .info-sub {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      color: var(--teal); letter-spacing: 0.06em; margin-bottom: 0.6rem;
+    }
+    .info-body { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.7; }
+
+    /* ── SCREENS ── */
+    .section-screens {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .screens-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .screen-card { background: var(--bg); padding: 1.5rem; }
+    .screen-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .screen-name {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .screen-class {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--teal); background: var(--teal-light); border: 1px solid var(--teal-mid);
+      padding: 0.18rem 0.5rem; display: inline-block; margin-bottom: 0.65rem;
+    }
+    .screen-desc { font-size: 0.83rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+    /* ── CONTRIBUTIONS + TOOLS ── */
+    .section-skills {
+      padding: 5rem 0; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 180px 1fr 1fr;
+      gap: 4.5rem; align-items: start;
+    }
+    .learned-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .learned-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 1.25rem; display: flex; gap: 0.9rem; align-items: flex-start;
+    }
+    .learned-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      color: var(--teal); flex-shrink: 0; margin-top: 0.22rem;
+    }
+    .learned-text { font-size: 0.875rem; color: var(--muted); font-weight: 300; line-height: 1.6; }
+    .learned-text strong { color: var(--text); font-weight: 500; }
+
+    .tools-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+    .tools-table tr { border-bottom: 1px solid var(--border); }
+    .tools-table tr:last-child { border-bottom: none; }
+    .tools-table td { padding: 0.85rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+    .tools-table td:first-child {
+      color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.6rem; background: var(--bg2);
+      border-right: 1px solid var(--border); white-space: nowrap; width: 120px;
+    }
+    .tools-table td:last-child { color: var(--muted); }
+
+    /* ── CTA ── */
+    .section-cta {
+      padding: 3.5rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-text h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem;
+      font-weight: 600; color: var(--navy); margin-bottom: 0.25rem;
+    }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); font-weight: 300; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.5rem; font-family: 'Inter', sans-serif;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      border-radius: 2px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--teal); }
+    .btn-outline { border: 1.5px solid var(--border2); color: var(--navy); background: transparent; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.75rem 5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      color: var(--muted2); letter-spacing: 0.06em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 0 1.5rem; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .hero-main { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero-meta { padding: 2rem 1.5rem; flex-direction: row; flex-wrap: wrap; border-top: 1px solid var(--border); }
+      .meta-item { flex: 1 1 45%; }
+      .page { padding: 0 1.5rem; }
+      .section-about, .section-skills, .section-screens { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
+      .arch-top, .feat-top, .impl-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .section-arch, .section-features, .section-impl { padding: 3rem 0; }
+      .arch-diagram { grid-template-columns: 1fr; padding: 1.5rem; }
+      .arch-arrow { transform: rotate(90deg); }
+      .network-diagram { grid-template-columns: 1fr; padding: 1.5rem; }
+      .feat-grid { grid-template-columns: 1fr 1fr; }
+      .impl-grid { grid-template-columns: 1fr; }
+      .screens-grid { grid-template-columns: 1fr; }
+      .section-cta { flex-direction: column; gap: 2rem; align-items: flex-start; padding: 3rem 0; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>LAN Communication Software</span>
+    </div>
+    <div class="hero-eyebrow">C# · .NET · Windows Forms · Networking</div>
+    <h1 class="hero-h1">
+      <strong>LAN-based Software</strong> for<br>
+      <em>Chat, Video Calling &amp; File Transfer</em>
+    </h1>
+    <p class="hero-desc">
+      A full-stack desktop communication platform built in C# .NET Windows Forms — enabling
+      real-time <strong>text chat, video/audio calling, and file transfer</strong> over a
+      Local Area Network without any internet dependency. Implemented with raw UDP sockets
+      for peer-to-peer messaging, a custom Wave audio engine for voice transmission,
+      a 3-tier architecture (GUI → Business Object Layer → SQL Server), and
+      persistent chat history backed by SQL Server Express.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-cs">C# .NET</span>
+      <span class="tag">Windows Forms</span>
+      <span class="tag">UDP Sockets</span>
+      <span class="tag">Wave Audio</span>
+      <span class="tag">SQL Server</span>
+      <span class="tag">LAN / P2P</span>
+      <span class="tag">3-Tier Architecture</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-key">Language</div>
+      <div class="meta-val">C# · .NET Framework</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Platform</div>
+      <div class="meta-val">Windows Forms · Visual Studio</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Networking</div>
+      <div class="meta-val">UDP Sockets · LAN · Peer-to-Peer</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Database</div>
+      <div class="meta-val">SQL Server Express · local .mdf</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Audio</div>
+      <div class="meta-val">Custom Wave Engine · winmm.dll P/Invoke</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/A-LAN-based-Software-for-Text-Chatting-Video-Calling-and-File-Transfer" target="_blank" class="meta-link">GitHub Repo ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>
+        This project is a <strong>Skype-like desktop communication suite</strong>
+        that operates entirely over a Local Area Network — no internet, no third-party
+        server, no cloud dependency. Any two machines on the same LAN can communicate
+        directly by exchanging IP addresses and port numbers, making it ideal for
+        closed networks such as university labs, offices, or corporate intranets.
+      </p>
+      <p>
+        The application was developed to explore <strong>low-level socket programming
+        in C#</strong> — specifically how to build real-time bidirectional communication
+        using raw UDP datagrams, handle asynchronous callbacks for non-blocking message
+        receipt, and manage application state across multiple Windows Forms screens.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        The software covers all three core communication modes: <strong>text chat</strong>
+        via UDP with persistent history stored in SQL Server, <strong>voice/audio calls</strong>
+        using a fully custom Wave audio engine that wraps Windows multimedia APIs via
+        P/Invoke (no external libraries), and <strong>file transfer</strong> over the same
+        LAN infrastructure. User accounts (login, signup) are managed with a dedicated
+        Business Object layer separating data access from the UI.
+      </p>
+      <p>
+        The architecture follows a clean <strong>3-tier pattern</strong>: the GUI layer
+        (Windows Forms) talks exclusively to the BOLayer (a dedicated C# class library)
+        which in turn manages all SQL Server interactions — a design pattern that was
+        also applied in enterprise EDI systems later in the career at Spring Systems.
+      </p>
+    </div>
+  </div>
+
+  <!-- 02 ARCHITECTURE -->
+  <div class="section-arch reveal">
+    <div class="arch-top">
+      <div class="rail-label">02<span>Architecture</span></div>
+      <p class="arch-intro">
+        The application is structured as a <strong>3-tier Windows application</strong>
+        with a separate Visual Studio solution project for each layer. The GUI layer
+        handles all Windows Forms events; the Business Object Layer (compiled as a
+        separate DLL) isolates all SQL Server operations; and the database tier uses
+        a local SQL Server Express .mdf file that can optionally be shared across
+        a LAN via a database server for multi-user persistence.
+      </p>
+    </div>
+
+    <!-- 3-tier diagram -->
+    <div class="arch-diagram">
+      <div class="arch-tier">
+        <div class="arch-tier-label">Tier 1 — Presentation</div>
+        <div class="arch-tier-name">GUI Layer</div>
+        <ul class="arch-tier-items">
+          <li>LogInGUI.cs</li>
+          <li>SignUpGUI.cs</li>
+          <li>SkypeGUI.cs (contacts)</li>
+          <li>ChatGUI.cs (messaging)</li>
+          <li>Windows Forms · .resx resources</li>
+        </ul>
+      </div>
+      <div class="arch-arrow">
+        →
+        <span>SQL calls<br>via BOClass</span>
+      </div>
+      <div class="arch-tier">
+        <div class="arch-tier-label">Tier 2 — Business Logic</div>
+        <div class="arch-tier-name">BOLayer.dll</div>
+        <ul class="arch-tier-items">
+          <li>BOClass.cs</li>
+          <li>chatHistorySave()</li>
+          <li>chatHistoryDisplay()</li>
+          <li>deleteChatHistory()</li>
+          <li>openConnection() / closeConnection()</li>
+        </ul>
+      </div>
+      <div class="arch-arrow">
+        →
+        <span>SqlConnection<br>string</span>
+      </div>
+      <div class="arch-tier">
+        <div class="arch-tier-label">Tier 3 — Data</div>
+        <div class="arch-tier-name">SQL Server Express</div>
+        <ul class="arch-tier-items">
+          <li>data.mdf (local / LAN)</li>
+          <li>tblChatHistory table</li>
+          <li>chat VARCHAR(50) column</li>
+          <li>INSERT · SELECT · DELETE</li>
+          <li>Integrated Security</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Network topology -->
+    <div class="network-diagram">
+      <div class="net-node">
+        <div class="net-node-label">Client A</div>
+        <div class="net-node-val">192.168.x.x:PORT_A</div>
+      </div>
+      <div class="net-arrow">
+        ←UDP→<br>
+        <span style="font-size:0.55rem;color:var(--muted2)">1500-byte<br>datagrams</span>
+      </div>
+      <div class="net-center">
+        <div class="net-center-label">LAN Switch</div>
+        <div class="net-center-val">UDP / IPv4</div>
+      </div>
+      <div class="net-arrow">
+        ←UDP→<br>
+        <span style="font-size:0.55rem;color:var(--muted2)">async<br>callback</span>
+      </div>
+      <div class="net-node">
+        <div class="net-node-label">Client B</div>
+        <div class="net-node-val">192.168.x.x:PORT_B</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 FEATURES -->
+  <div class="section-features reveal">
+    <div class="feat-top">
+      <div class="rail-label">03<span>Features</span></div>
+      <p class="feat-intro">
+        Three communication modes are integrated into a single desktop application,
+        all operating over the local network. Text chat uses the same UDP socket
+        infrastructure as voice, keeping the implementation consistent across features.
+        User state (login, contacts, history) is managed via SQL Server, making the
+        application stateful even across sessions.
+      </p>
+    </div>
+    <div class="feat-grid">
+
+      <div class="feat-card">
+        <span class="feat-icon">💬</span>
+        <div class="feat-num">Feature 01</div>
+        <div class="feat-name">Real-time Text Chat</div>
+        <p class="feat-desc">
+          UDP-based peer-to-peer messaging with 1,500-byte datagrams. Messages are
+          sent via <code>Socket.Send()</code> and received asynchronously through
+          <code>BeginReceiveFrom()</code> callbacks — keeping the UI thread
+          unblocked. Displays sent/received messages separately. Enter key shortcut
+          supported alongside the Send button.
+        </p>
+        <span class="feat-badge">UDP · Async · SQL history</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🎙️</span>
+        <div class="feat-num">Feature 02</div>
+        <div class="feat-name">Voice / Audio Calling</div>
+        <p class="feat-desc">
+          Custom Wave audio engine built from scratch — no NAudio or external
+          libraries. <code>WaveIn.cs</code> and <code>WaveOut.cs</code> wrap
+          Windows Multimedia API (<code>winmm.dll</code>) via P/Invoke with native
+          structs: <code>WAVEFORMATEX</code>, <code>WAVEHDR</code>, and
+          <code>WAVEOUTCAPS</code>. Audio is captured, buffered, and transmitted
+          over UDP to the remote peer.
+        </p>
+        <span class="feat-badge">winmm.dll · P/Invoke · PCM</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">📂</span>
+        <div class="feat-num">Feature 03</div>
+        <div class="feat-name">File Transfer</div>
+        <p class="feat-desc">
+          Peer-to-peer file transfer over the LAN using the same socket
+          infrastructure. Files are read, serialised into byte buffers, and sent
+          to the remote IP:port over the local network — no external protocol
+          or cloud upload required. Suitable for documents, images, and other
+          binary payloads within the same subnet.
+        </p>
+        <span class="feat-badge">Binary · Byte Buffer · LAN</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">👤</span>
+        <div class="feat-num">Feature 04</div>
+        <div class="feat-name">User Accounts &amp; History</div>
+        <p class="feat-desc">
+          Full user account lifecycle — Login (<code>LogInGUI</code>), Sign Up
+          (<code>SignUpGUI</code>), and persistent contact/chat history via
+          SQL Server Express. Chat history is loaded from <code>tblChatHistory</code>
+          on startup, saved per message, and can be fully cleared via a
+          confirmation dialog. User profile pictures displayed via
+          <code>PictureBox</code> with custom icon resources.
+        </p>
+        <span class="feat-badge">SQL Server · CRUD · Sessions</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 IMPLEMENTATION -->
+  <div class="section-impl reveal">
+    <div class="impl-top">
+      <div class="rail-label">04<span>Implementation</span></div>
+      <p class="impl-intro">
+        Two of the most technically involved components are the UDP socket layer
+        and the custom Wave audio engine. Both are implemented without third-party
+        libraries — relying on .NET's <code>System.Net.Sockets</code> for networking
+        and direct Windows API P/Invoke for audio device management.
+      </p>
+    </div>
+
+    <!-- UDP Socket panel -->
+    <div class="impl-grid">
+      <div class="code-panel">
+        <div class="code-label">ChatGUI.cs — UDP Socket Setup</div>
+        <div class="code-block"><span class="cm">// On form load — bind local endpoint</span>
+<span class="hi">sck</span> = <span class="kw">new</span> Socket(
+    AddressFamily.InterNetwork,
+    SocketType.Dgram,      <span class="cm">// UDP</span>
+    ProtocolType.Udp);
+
+sck.SetSocketOption(
+    SocketOptionLevel.Socket,
+    SocketOptionName.ReuseAddress,
+    <span class="kw">true</span>);
+
+<span class="cm">// Bind to local IP:port</span>
+epLocal = <span class="kw">new</span> IPEndPoint(
+    IPAddress.Parse(textLocalIp.Text),
+    Convert.ToInt32(textLocalPort.Text));
+sck.Bind(epLocal);
+
+<span class="cm">// Connect to remote peer</span>
+epRemote = <span class="kw">new</span> IPEndPoint(
+    IPAddress.Parse(textRemoteIp.Text),
+    Convert.ToInt32(textRemotePort.Text));
+sck.Connect(epRemote);
+
+<span class="cm">// Start async receive loop</span>
+buffer = <span class="kw">new</span> byte[1500];
+sck.BeginReceiveFrom(
+    buffer, 0, buffer.Length,
+    SocketFlags.None, ref epRemote,
+    <span class="kw">new</span> AsyncCallback(MessageCallBack),
+    buffer);</div>
+      </div>
+      <div class="info-panel">
+        <div>
+          <div class="info-heading">UDP Peer-to-Peer Socket</div>
+          <div class="info-sub">System.Net.Sockets · AddressFamily.InterNetwork</div>
+          <p class="info-body">
+            A single UDP <code>Socket</code> is created at form load, bound to the
+            local machine's LAN IP and a chosen port, then connected to the remote
+            peer's IP and port. <code>SocketOptionName.ReuseAddress</code> allows
+            the port to be reused if the application restarts.
+          </p>
+        </div>
+        <div>
+          <div class="info-heading">Async Receive Callback</div>
+          <div class="info-sub">BeginReceiveFrom · IAsyncResult · non-blocking</div>
+          <p class="info-body">
+            <code>BeginReceiveFrom</code> with an <code>AsyncCallback</code> keeps
+            the UI thread fully responsive while waiting for incoming messages. When
+            a datagram arrives, <code>MessageCallBack()</code> decodes the 1,500-byte
+            buffer using <code>ASCIIEncoding</code>, appends the message to the
+            ListView, and immediately re-arms the receive loop.
+          </p>
+        </div>
+        <div>
+          <div class="info-heading">LAN IP Auto-Detection</div>
+          <div class="info-sub">Dns.GetHostEntry · AddressFamily.InterNetwork</div>
+          <p class="info-body">
+            <code>GetLocalIp()</code> iterates the host's address list and returns
+            the first IPv4 address — automatically populating the local IP field so
+            users only need to enter the remote peer's IP, not their own.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wave Audio panel -->
+    <div class="impl-grid">
+      <div class="code-panel">
+        <div class="code-label">Wave Audio — Native winmm.dll P/Invoke</div>
+        <div class="code-block"><span class="cm">// WAVEFORMATEX struct (native interop)</span>
+[StructLayout(LayoutKind.Sequential)]
+<span class="kw">public struct</span> WAVEFORMATEX {
+    <span class="kw">public</span> ushort  wFormatTag;    <span class="cm">// PCM=1</span>
+    <span class="kw">public</span> ushort  nChannels;     <span class="cm">// 1=mono</span>
+    <span class="kw">public</span> uint    nSamplesPerSec; <span class="cm">// 44100</span>
+    <span class="kw">public</span> uint    nAvgBytesPerSec;
+    <span class="kw">public</span> ushort  nBlockAlign;
+    <span class="kw">public</span> ushort  wBitsPerSample; <span class="cm">// 16-bit</span>
+    <span class="kw">public</span> ushort  cbSize;
+}
+
+<span class="cm">// P/Invoke to Windows Multimedia API</span>
+[DllImport(<span class="str">"winmm.dll"</span>)]
+<span class="kw">public static extern</span> MMSYSERR
+    waveInOpen(<span class="kw">ref</span> IntPtr phwi,
+               uint uDeviceID,
+               <span class="kw">ref</span> WAVEFORMATEX pwfx,
+               IntPtr dwCallback,
+               IntPtr dwInstance,
+               WavConstants dwFlags);
+
+<span class="cm">// WavInDevice / WavOutDevice wrapper</span>
+<span class="hi">WavInDevice</span>  capture = <span class="kw">new</span> WavInDevice();
+<span class="hi">WavOutDevice</span> playback = <span class="kw">new</span> WavOutDevice();</div>
+      </div>
+      <div class="info-panel">
+        <div>
+          <div class="info-heading">Custom Wave Audio Engine</div>
+          <div class="info-sub">winmm.dll · P/Invoke · No external libraries</div>
+          <p class="info-body">
+            The audio subsystem wraps the Windows Multimedia API directly through
+            Platform Invocation Services (P/Invoke). All native structs —
+            <code>WAVEFORMATEX</code>, <code>WAVEHDR</code>, <code>WAVEOUTCAPS</code>
+            — are declared in C# with <code>[StructLayout(LayoutKind.Sequential)]</code>
+            to match the exact memory layout expected by the Win32 API.
+          </p>
+        </div>
+        <div>
+          <div class="info-heading">WaveIn / WaveOut Devices</div>
+          <div class="info-sub">WavInDevice.cs · WavOutDevice.cs · PCM capture</div>
+          <p class="info-body">
+            <code>WaveIn.cs</code> (16,759 bytes) manages microphone capture:
+            opening the input device, setting up double-buffering with
+            <code>WAVEHDR</code> headers, and streaming PCM audio frames into
+            a buffer. <code>WaveOut.cs</code> handles playback — writing buffered
+            audio back to the speaker output device on the receiving peer.
+          </p>
+        </div>
+        <div>
+          <div class="info-heading">Error Handling</div>
+          <div class="info-sub">MMSYSERR enumeration · 30+ error codes</div>
+          <p class="info-body">
+            <code>MMSYSERR.cs</code> defines the full Windows Multimedia error
+            code enumeration (MMSYSERR_NOERROR, MMSYSERR_BADDEVICEID,
+            MMSYSERR_NOTENABLED, etc.) used to validate every API call return
+            value — providing meaningful diagnostics for audio device failures.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 SCREENS -->
+  <div class="section-screens reveal">
+    <div class="rail-label">05<span>Screens</span></div>
+    <div class="screens-grid">
+
+      <div class="screen-card">
+        <div class="screen-num">Screen 01</div>
+        <div class="screen-name">Login</div>
+        <span class="screen-class">LogInGUI.cs</span>
+        <p class="screen-desc">
+          Entry point of the application. User enters credentials and clicks
+          "Keep Log In" to proceed to the main contacts screen. On success,
+          instantiates <code>SkypeGUI</code>, shows it, and hides the login
+          window — maintaining a single active window at any time.
+        </p>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-num">Screen 02</div>
+        <div class="screen-name">Sign Up</div>
+        <span class="screen-class">SignUpGUI.cs</span>
+        <p class="screen-desc">
+          New user registration screen. Collects user details and persists
+          them to the SQL Server database via the BOLayer. Linked from the
+          Login screen via a "Register" or "Sign Up" route — keeping
+          authentication flow self-contained.
+        </p>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-num">Screen 03</div>
+        <div class="screen-name">Contacts / Home</div>
+        <span class="screen-class">SkypeGUI.cs</span>
+        <p class="screen-desc">
+          Main hub displaying the contact list in a <code>ListView</code>
+          with dynamically generated contact buttons. Navigates to
+          <code>ChatGUI</code> on contact selection. Contains the application's
+          primary navigation logic and serves as the shell for all
+          sub-features.
+        </p>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-num">Screen 04</div>
+        <div class="screen-name">Chat Window</div>
+        <span class="screen-class">ChatGUI.cs</span>
+        <p class="screen-desc">
+          The core communication screen: dark-themed (charcoal gray panels,
+          black input area) with a friend's profile picture and name in orange.
+          Message history displayed in a scrollable <code>RichTextBox</code>;
+          incoming messages in a <code>ListView</code>. Local/remote IP and
+          port fields configure the UDP connection. "Delete History" button
+          with confirmation dialog.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 06 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">06<span>Contributions</span></div>
+
+    <ul class="learned-list">
+      <li class="learned-item">
+        <span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>UDP socket networking</strong> — Implemented full bidirectional
+          peer-to-peer messaging using raw UDP datagrams. Configured
+          <code>Socket.Bind()</code>, <code>Socket.Connect()</code>, async
+          <code>BeginReceiveFrom()</code> with callback, and <code>ReuseAddress</code>
+          socket option for reliable LAN communication without a central server.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Custom Wave audio engine</strong> — Built a complete audio
+          capture and playback pipeline from scratch using Windows Multimedia
+          API P/Invoke. Implemented native struct marshalling
+          (<code>WAVEFORMATEX</code>, <code>WAVEHDR</code>), device enumeration,
+          double-buffered audio streaming, and the full <code>MMSYSERR</code>
+          error code enumeration — with no dependency on NAudio or any third-party
+          audio library.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>3-tier architecture with BOLayer</strong> — Separated data access
+          into a standalone C# class library (BOLayer.dll) compiled independently
+          from the GUI. The Business Object class encapsulates all
+          <code>SqlConnection</code>, <code>SqlCommand</code>, and
+          <code>SqlDataReader</code> operations — making the UI layer completely
+          database-agnostic.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Full application screen flow</strong> — Designed and implemented
+          four complete Windows Forms screens (Login → SignUp → Contacts →
+          Chat) with proper window lifecycle management: <code>Form.Show()</code> /
+          <code>Form.Hide()</code> transitions, resource-embedded icons and
+          profile pictures via <code>Properties.Resources</code>, and
+          chat history persistence with load-on-startup and clear-on-demand.
+        </span>
+      </li>
+      <li class="learned-item">
+        <span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Local IP auto-detection</strong> — Implemented <code>GetLocalIp()</code>
+          using <code>Dns.GetHostEntry()</code> to iterate the machine's address
+          list and extract the IPv4 LAN address automatically, removing the
+          need for users to manually look up their IP. The remote peer still
+          provides their IP, enabling direct LAN addressing.
+        </span>
+      </li>
+    </ul>
+
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>C# · .NET Framework</td></tr>
+        <tr><td>UI Framework</td><td>Windows Forms · Visual Studio Designer · .resx resources</td></tr>
+        <tr><td>Networking</td><td>System.Net.Sockets · UDP (SocketType.Dgram) · BeginReceiveFrom</td></tr>
+        <tr><td>Audio</td><td>Custom Wave Engine · winmm.dll · P/Invoke · WAVEFORMATEX · WAVEHDR</td></tr>
+        <tr><td>Database</td><td>SQL Server Express · SqlConnection · SqlCommand · local .mdf</td></tr>
+        <tr><td>Architecture</td><td>3-Tier · GUI Layer + BOLayer.dll + SQL Server</td></tr>
+        <tr><td>IDE</td><td>Visual Studio · Eclipse CDT (audio prototype)</td></tr>
+        <tr><td>Encoding</td><td>ASCIIEncoding · byte[1500] datagram buffer</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>View the source code</h3>
+      <p>Full C# solution including GUI, BOLayer, Wave audio engine, and SQL database on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/A-LAN-based-Software-for-Text-Chatting-Video-Calling-and-File-Transfer" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
