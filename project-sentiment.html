@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentiment Analysis — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#ffffff; --bg2:#f7f9fb; --navy:#0b2545; --teal:#0e7c86;
+      --teal-light:#e6f4f5; --teal-mid:#b2dde2; --text:#1a2332;
+      --muted:#5a6a7a; --muted2:#8a9aaa; --border:#dde5ed; --border2:#c8d5e0;
+      --pos:#22a05a; --pos-l:#edfaf2; --neg:#c83737; --neg-l:#fff0f0;
+      --afinn:#276dc3; --nrc:#8b3dba; --lough:#c07010;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0 5rem;height:64px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);text-decoration:none}
+    .nav-logo span{color:var(--teal)}
+    .nav-right{display:flex;align-items:center;gap:2.5rem}
+    .nav-right a{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+    .nav-right a:hover{color:var(--teal)}
+    .hero-strip{margin-top:64px;display:grid;grid-template-columns:1fr 320px;border-bottom:1px solid var(--border);min-height:58vh}
+    .hero-main{padding:5rem 5rem 4.5rem;display:flex;flex-direction:column;justify-content:flex-end;border-right:1px solid var(--border)}
+    .breadcrumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3.5rem}
+    .breadcrumb a{color:var(--teal);text-decoration:none}
+    .breadcrumb-sep{color:var(--border2)}
+    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem}
+    .hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--teal)}
+    .hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:300;color:var(--navy);line-height:1.1;letter-spacing:-.01em;margin-bottom:1.5rem}
+    .hero-h1 strong{font-weight:600} .hero-h1 em{color:var(--teal);font-style:italic}
+    .hero-desc{font-size:.95rem;color:var(--muted);font-weight:300;max-width:560px;line-height:1.85;margin-bottom:2.25rem}
+    .tag-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border:1px solid var(--teal-mid);background:var(--teal-light);color:var(--teal)}
+    .tag-r{border-color:#276dc3;background:#edf4ff;color:#276dc3}
+    .tag-pub{border-color:#4a2c8a;background:#f3eeff;color:#4a2c8a}
+    .hero-meta{padding:5rem 2.5rem 4.5rem;background:var(--bg2);display:flex;flex-direction:column;justify-content:flex-end}
+    .meta-item{padding:1rem 0;border-top:1px solid var(--border)}
+    .meta-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem}
+    .meta-val{font-family:'Inter',sans-serif;font-size:.875rem;color:var(--text)}
+    .meta-val.cuny{color:#4a2c8a}
+    .meta-links{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem}
+    .meta-link{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);text-decoration:none;transition:opacity .2s}
+    .meta-link:hover{opacity:.65}
+    .page{max-width:1160px;margin:0 auto;padding:0 5rem}
+    .rail-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;padding-top:.3rem}
+    .rail-label span{display:block;color:var(--muted2);font-size:.58rem;margin-top:.3rem}
+
+    .section-about{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .prose p{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.9;margin-bottom:1rem}
+    .prose p:last-child{margin-bottom:0}
+    .prose strong{color:var(--text);font-weight:500}
+
+    /* Two-part structure strip */
+    .part-strip{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:1rem}
+    .part-card{background:var(--bg);padding:1.5rem}
+    .part-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem}
+    .part-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:.5rem}
+    .part-desc{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.6}
+
+    /* Lexicons 4-card */
+    .section-lexicons{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .lex-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .lex-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .lex-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+    .lex-card{background:var(--bg);padding:1.75rem 1.5rem 2rem}
+    .lex-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.55rem}
+    .lex-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+    .lex-ref{font-family:'JetBrains Mono',monospace;font-size:.62rem;background:var(--bg2);border:1px solid var(--border);padding:.2rem .5rem;margin-bottom:.8rem;display:inline-block;color:var(--muted2)}
+    .lex-scale{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:.25rem .6rem;margin-bottom:.75rem;display:inline-block;border:1px solid}
+    .lex-desc{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.6}
+
+    /* Pipeline */
+    .section-pipeline{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .pipe-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .pipe-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .pipe-steps{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .pipe-step{background:var(--bg);display:grid;grid-template-columns:52px 1fr}
+    .pipe-step.hi{background:var(--teal-light)}
+    .step-n{background:var(--bg2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal)}
+    .pipe-step.hi .step-n{background:var(--navy);color:#fff;border-right-color:var(--navy)}
+    .step-b{padding:1rem 1.5rem}
+    .step-t{font-family:'Inter',sans-serif;font-size:.875rem;font-weight:500;color:var(--text);margin-bottom:.2rem}
+    .step-d{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .step-c{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal);background:var(--teal-light);border:1px solid var(--teal-mid);padding:.2rem .5rem;margin-top:.4rem;display:inline-block}
+
+    /* Results */
+    .section-results{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr;gap:4.5rem;align-items:start}
+    .res-inner{display:flex;flex-direction:column;gap:2.5rem}
+    .res-label{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);margin-bottom:1rem}
+    .findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .finding-card{background:var(--bg);padding:1.5rem}
+    .finding-card.pos{background:var(--pos-l)}
+    .finding-card.neg{background:var(--neg-l)}
+    .finding-metric{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem}
+    .finding-metric.pf{color:var(--pos)} .finding-metric.nf{color:var(--neg)} .finding-metric.tf{color:var(--teal)}
+    .finding-val{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+    .finding-desc{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .lex-compare-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .lex-compare-table th{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;background:var(--bg2);padding:.8rem 1.1rem;border-bottom:1px solid var(--border);text-align:left;border-right:1px solid var(--border)}
+    .lex-compare-table th:last-child{border-right:none}
+    .lex-compare-table td{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);padding:.7rem 1.1rem;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+    .lex-compare-table td:last-child{border-right:none}
+    .lex-compare-table tr:last-child td{border-bottom:none}
+    .td-afinn{color:var(--afinn);font-weight:600} .td-teal{color:var(--teal);font-weight:600}
+    .td-nrc{color:var(--nrc);font-weight:600} .td-lough{color:var(--lough);font-weight:600}
+
+    /* Skills */
+    .section-skills{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .learned-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .learned-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .learned-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .learned-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .learned-text strong{color:var(--text);font-weight:500}
+    .tools-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .tools-table tr{border-bottom:1px solid var(--border)}
+    .tools-table tr:last-child{border-bottom:none}
+    .tools-table td{padding:.85rem 1.1rem;font-family:'JetBrains Mono',monospace;font-size:.7rem}
+    .tools-table td:first-child{color:var(--teal);letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;background:var(--bg2);border-right:1px solid var(--border);white-space:nowrap;width:120px}
+    .tools-table td:last-child{color:var(--muted)}
+
+    .section-cta{padding:3.5rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .cta-text h3{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:600;color:var(--navy);margin-bottom:.25rem}
+    .cta-text p{font-size:.875rem;color:var(--muted);font-weight:300}
+    .btn-row{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--navy);color:#fff} .btn-primary:hover{background:var(--teal)}
+    .btn-rpubs{background:#4a2c8a;color:#fff} .btn-rpubs:hover{background:#361e66}
+    .btn-outline{border:1.5px solid var(--border2);color:var(--navy);background:transparent} .btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+    footer{padding:1.75rem 5rem;display:flex;justify-content:space-between;align-items:center}
+    footer p{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted2)}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:none}
+
+    @media(max-width:960px){
+      nav{padding:0 1.5rem} .hero-strip{grid-template-columns:1fr} .hero-main{padding:3.5rem 1.5rem 2.5rem}
+      .hero-meta{padding:2rem 1.5rem;flex-direction:row;flex-wrap:wrap;border-top:1px solid var(--border)} .meta-item{flex:1 1 45%}
+      .page{padding:0 1.5rem}
+      .section-about,.section-skills,.section-results{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .lex-top,.pipe-top{grid-template-columns:1fr;gap:1.5rem}
+      .section-lexicons,.section-pipeline{padding:3rem 0}
+      .lex-grid{grid-template-columns:1fr 1fr} .findings-grid,.part-strip{grid-template-columns:1fr}
+      .section-cta{flex-direction:column;gap:2rem;align-items:flex-start;padding:3rem 0}
+      footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a><span class="breadcrumb-sep">/</span>
+      <span>Sentiment Analysis</span>
+    </div>
+    <div class="hero-eyebrow">R · NLP · Tidy Text · CUNY DATA 607</div>
+    <h1 class="hero-h1">
+      <strong>Sentiment Analysis</strong> —<br>
+      <em>Literary Text &amp; Real-World News</em>
+    </h1>
+    <p class="hero-desc">
+      A two-part tidy text sentiment analysis: first reproducing the canonical
+      workflow from <em>Text Mining with R</em> (Silge &amp; Robinson) on
+      <strong>Jane Austen's six novels</strong>, then extending it to
+      <strong>~400 real-world news articles</strong> collected via NewsAPI across
+      four categories — politics, technology, business, and sports. Four sentiment
+      lexicons are compared: Bing, AFINN, NRC, and Loughran–McDonald, revealing
+      how corpus type and lexicon choice fundamentally shape sentiment results.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-r">R</span>
+      <span class="tag">tidytext</span>
+      <span class="tag">janeaustenr</span>
+      <span class="tag">NewsAPI</span>
+      <span class="tag">Bing · AFINN · NRC</span>
+      <span class="tag">Loughran-McDonald</span>
+      <span class="tag">NLP</span>
+      <span class="tag tag-pub">CUNY DATA 607</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="meta-key">Language</div><div class="meta-val">R · Quarto</div></div>
+    <div class="meta-item"><div class="meta-key">Corpus 1</div><div class="meta-val">Jane Austen novels · 6 books · janeaustenr</div></div>
+    <div class="meta-item"><div class="meta-key">Corpus 2</div><div class="meta-val">NewsAPI · ~400 articles · 4 categories</div></div>
+    <div class="meta-item"><div class="meta-key">Lexicons</div><div class="meta-val">Bing · AFINN · NRC · Loughran-McDonald</div></div>
+    <div class="meta-item"><div class="meta-key">Key Finding</div><div class="meta-val">Literary text → smooth; News → volatile</div></div>
+    <div class="meta-item"><div class="meta-key">Course</div><div class="meta-val cuny">DATA 607 · CUNY SPS</div></div>
+    <div class="meta-item"><div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/Sentiment-Analysis" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://rpubs.com/nafees19/1421175" target="_blank" class="meta-link">RPubs Report ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>This project explores <strong>word-level sentiment analysis using tidy text
+        principles</strong> — where text is decomposed into individual word tokens
+        and sentiment is estimated by joining those tokens against pre-built
+        sentiment lexicons. The approach follows the method established in
+        <em>Text Mining with R: A Tidy Approach</em> (Silge &amp; Robinson, 2017),
+        treating overall sentiment as an aggregate of word-level contributions.</p>
+      <p>The core question driving the extension is: <strong>how well does a
+        sentiment methodology developed for literary prose transfer to real-world
+        news text?</strong> By applying identical pipelines to both corpora,
+        the analysis isolates the effect of corpus type and lexicon choice
+        on sentiment results.</p>
+    </div>
+    <div class="prose">
+      <p>The project is structured in two parts. Part 1 establishes a baseline
+        using <strong>Jane Austen's six novels</strong> as a clean, well-structured
+        literary corpus. Part 2 applies the same methodology — and adds the
+        Loughran–McDonald lexicon — to <strong>~400 news articles</strong>
+        collected from the NewsAPI across four topic categories.</p>
+      <p>A key methodological contribution is the use of <strong>custom domain
+        stop words</strong> (e.g., removing the word "trump" from political news
+        analysis) to reduce named-entity bias in sentiment scoring — a preprocessing
+        concern that doesn't arise in literary text but is critical for
+        news-domain analysis.</p>
+      <div class="part-strip">
+        <div class="part-card">
+          <div class="part-num">Part 1</div>
+          <div class="part-title">Jane Austen Corpus</div>
+          <p class="part-desc">6 novels · Bing, AFINN, NRC lexicons · 80-line sentiment chunks · lexicon comparison on Pride &amp; Prejudice</p>
+        </div>
+        <div class="part-card">
+          <div class="part-num">Part 2</div>
+          <div class="part-title">NewsAPI Extension</div>
+          <p class="part-desc">~400 articles · 4 categories · 4 lexicons including Loughran-McDonald · custom stop word removal · per-article sentiment</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 LEXICONS -->
+  <div class="section-lexicons reveal">
+    <div class="lex-top">
+      <div class="rail-label">02<span>Lexicons</span></div>
+      <p class="lex-intro">
+        Four sentiment lexicons are applied across the two corpora. Each encodes
+        a different theory of sentiment: binary polarity (Bing), numeric scoring
+        (AFINN), multi-dimensional emotion (NRC), and domain-adapted financial/news
+        negativity (Loughran–McDonald). Comparing lexicons on the same text reveals
+        how the choice of sentiment dictionary shapes the conclusions drawn.
+      </p>
+    </div>
+    <div class="lex-grid">
+      <div class="lex-card">
+        <div class="lex-num" style="color:var(--teal)">Lexicon 01</div>
+        <div class="lex-name">Bing</div>
+        <div class="lex-ref">Hu &amp; Liu (2004)</div>
+        <div class="lex-scale" style="border-color:var(--teal);color:var(--teal);background:var(--teal-light)">positive / negative</div>
+        <p class="lex-desc">Binary classification of words as positive or negative.
+          Applied in Part 1 across all 6 novels (80-line chunks) and in Part 2
+          per article. Produces sharp net sentiment (positive − negative) ideal
+          for tracking narrative arcs. Used via <code>get_sentiments("bing")</code>.</p>
+      </div>
+      <div class="lex-card">
+        <div class="lex-num" style="color:var(--afinn)">Lexicon 02</div>
+        <div class="lex-name">AFINN</div>
+        <div class="lex-ref">Nielsen (2011)</div>
+        <div class="lex-scale" style="border-color:var(--afinn);color:var(--afinn);background:#edf4ff">−5 to +5 numeric score</div>
+        <p class="lex-desc">Assigns integer scores from −5 (most negative) to +5
+          (most positive) to 2,477 words. Sentiment is computed as
+          <code>sum(value)</code> per chunk. Shows greater amplitude than Bing
+          and NRC because of its continuous scoring — most pronounced
+          variation seen in political news.</p>
+      </div>
+      <div class="lex-card">
+        <div class="lex-num" style="color:var(--nrc)">Lexicon 03</div>
+        <div class="lex-name">NRC</div>
+        <div class="lex-ref">Mohammad &amp; Turney (2013)</div>
+        <div class="lex-scale" style="border-color:var(--nrc);color:var(--nrc);background:#f3eeff">10 emotion categories</div>
+        <p class="lex-desc">Maps words to 10 emotion categories: anger, anticipation,
+          disgust, fear, joy, sadness, surprise, trust, positive, and negative.
+          In Part 1, joy words in <em>Emma</em> are extracted and counted.
+          In Part 2, positive/negative subsets are used for lexicon comparison
+          alongside Bing and AFINN.</p>
+      </div>
+      <div class="lex-card">
+        <div class="lex-num" style="color:var(--lough)">Lexicon 04</div>
+        <div class="lex-name">Loughran–McDonald</div>
+        <div class="lex-ref">Loughran &amp; McDonald (2011)</div>
+        <div class="lex-scale" style="border-color:var(--lough);color:var(--lough);background:#fef9ee">News / financial domain</div>
+        <p class="lex-desc">Specifically designed for financial and formal text,
+          where words like "liability" or "risk" carry negative connotations
+          distinct from everyday usage. Applied only in Part 2 (news corpus)
+          where its domain focus is appropriate. Consistently produces more
+          negative sentiment scores than the other three lexicons on political news.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 PIPELINE -->
+  <div class="section-pipeline reveal">
+    <div class="pipe-top">
+      <div class="rail-label">03<span>Pipeline</span></div>
+      <p class="pipe-intro">
+        The tidy text workflow treats every word as an observation (one row per token)
+        and uses standard <code>dplyr</code> verbs — <code>inner_join()</code>,
+        <code>count()</code>, <code>group_by()</code>, <code>pivot_wider()</code>
+        — to compute sentiment at any level of aggregation. The same steps apply
+        to both corpora; the NewsAPI pipeline adds a news collection step
+        and domain-specific stop word cleaning.
+      </p>
+    </div>
+    <div class="pipe-steps">
+      <div class="pipe-step">
+        <div class="step-n">01</div>
+        <div class="step-b">
+          <div class="step-t">Load and structure text corpus</div>
+          <div class="step-d"><strong>Part 1:</strong> <code>austen_books()</code> loads 6 novels. Line numbers and chapter markers are added via <code>mutate(linenumber=row_number(), chapter=cumsum(str_detect(...)))</code>. <strong>Part 2:</strong> NewsAPI <code>/v2/everything</code> endpoint queried for 4 categories (politics, technology, business, sports), 100 articles each. Title + description + content concatenated into a single <code>text</code> field.</div>
+          <span class="step-c">GET /v2/everything?q={query}&amp;pageSize=100&amp;language=en</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">02</div>
+        <div class="step-b">
+          <div class="step-t">Tokenize into tidy word format</div>
+          <div class="step-d"><code>unnest_tokens(word, text)</code> converts each text into one word per row — the core tidy text operation. This produces a long-format tibble with one observation per (document, word) pair, enabling all subsequent joins and aggregations.</div>
+          <span class="step-c">tidy_books &lt;- austen_books() %&gt;% unnest_tokens(word, text)</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">03</div>
+        <div class="step-b">
+          <div class="step-t">Remove stop words (and domain-specific terms)</div>
+          <div class="step-d"><code>anti_join(stop_words)</code> removes common English stop words. For the news corpus, a custom stop word list is added using <code>bind_rows(tibble(word=c("trump"), lexicon="custom"), stop_words)</code> to prevent named entities from skewing political sentiment scores.</div>
+          <span class="step-c">anti_join(custom_stop_words, by="word")</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">04</div>
+        <div class="step-b">
+          <div class="step-t">Join with sentiment lexicons</div>
+          <div class="step-d"><code>inner_join(get_sentiments("bing"|"afinn"|"nrc"|"loughran"))</code> matches each token against the chosen lexicon, keeping only words that appear in both. Words not in the lexicon are dropped — a key limitation of dictionary-based approaches on domain-specific text.</div>
+          <span class="step-c">inner_join(get_sentiments("bing")) %&gt;% inner_join(get_sentiments("afinn"))</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">05</div>
+        <div class="step-b">
+          <div class="step-t">Aggregate sentiment by chunk / article</div>
+          <div class="step-d"><strong>Part 1:</strong> texts chunked into 80-line sections using <code>index = linenumber %/% 80</code>. <strong>Part 2:</strong> aggregated by <code>article_id</code>. In both cases, <code>pivot_wider()</code> reshapes positive/negative counts into columns, and <code>sentiment = positive − negative</code> computes the net score.</div>
+          <span class="step-c">mutate(sentiment = positive - negative)</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">06</div>
+        <div class="step-b">
+          <div class="step-t">Visualize and compare across lexicons</div>
+          <div class="step-d">Sentiment is plotted using <code>ggplot2::geom_col()</code> with <code>facet_wrap(~method)</code> to compare AFINN, Bing, NRC, and Loughran–McDonald side by side on the same political news articles. Top contributing words extracted via <code>count(word, sentiment, sort=TRUE)</code> + <code>slice_max(n, n=10)</code>.</div>
+          <span class="step-c">facet_wrap(~method, ncol=1, scales="free_y")</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 KEY FINDINGS -->
+  <div class="section-results reveal">
+    <div class="rail-label">04<span>Key Findings</span></div>
+    <div class="res-inner">
+      <div>
+        <div class="res-label">Literary vs News Corpus</div>
+        <div class="findings-grid">
+          <div class="finding-card pos">
+            <div class="finding-metric pf">Jane Austen Novels — Literary Corpus</div>
+            <div class="finding-val">Smooth &amp; Consistent Sentiment</div>
+            <p class="finding-desc">All six novels produce <strong>coherent positive-leaning sentiment arcs</strong>
+              across 80-line chunks, with clear narrative highs and lows.
+              Structured narrative prose and stable vocabulary make lexicon
+              matching reliable and results interpretable across all three
+              lexicons (Bing, AFINN, NRC).</p>
+          </div>
+          <div class="finding-card neg">
+            <div class="finding-metric nf">NewsAPI Articles — Real-World Corpus</div>
+            <div class="finding-val">Volatile &amp; Inconsistent Sentiment</div>
+            <p class="finding-desc">News articles produce <strong>highly variable sentiment</strong>
+              with large swings between articles, even within the same category.
+              Mixed tonal register (factual reporting + opinion), domain-specific vocabulary,
+              and named entities (political figures) all reduce lexicon match rate
+              and reliability compared to literary text.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="res-label">Lexicon Comparison — Political News (after custom stop word removal)</div>
+        <table class="lex-compare-table">
+          <thead>
+            <tr>
+              <th>Lexicon</th>
+              <th>Scale</th>
+              <th>Behaviour on Political News</th>
+              <th>Key Observation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-afinn">AFINN</td>
+              <td>−5 to +5</td>
+              <td>Highest amplitude swings</td>
+              <td>Continuous scores amplify both positives and negatives</td>
+            </tr>
+            <tr>
+              <td class="td-teal">Bing</td>
+              <td>Pos / Neg</td>
+              <td>Sharp but moderate swings</td>
+              <td>Clean binary signal; most widely applicable</td>
+            </tr>
+            <tr>
+              <td class="td-nrc">NRC</td>
+              <td>10 emotions</td>
+              <td>Similar pattern to Bing</td>
+              <td>Using positive/negative subsets mirrors Bing behaviour</td>
+            </tr>
+            <tr>
+              <td class="td-lough">Loughran-McDonald</td>
+              <td>Pos / Neg</td>
+              <td>Consistently more negative</td>
+              <td>Domain-specific negatives (liability, risk) inflate negativity</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="res-label">Category-Level Sentiment (Bing, per article)</div>
+        <div class="findings-grid">
+          <div class="finding-card neg">
+            <div class="finding-metric nf">Politics</div>
+            <div class="finding-val">Most Negative Category</div>
+            <p class="finding-desc">Political news consistently skews negative across all
+              four lexicons. Top negative words include: crisis, threat, fail,
+              attack. Named entity bias (political figures) required custom stop
+              word removal to reduce distortion.</p>
+          </div>
+          <div class="finding-card pos">
+            <div class="finding-metric pf">Sports</div>
+            <div class="finding-val">Most Positive Category</div>
+            <p class="finding-desc">Sports articles produce the strongest positive
+              sentiment signal. Words like win, champion, lead, achievement dominate.
+              Results are consistent across Bing, AFINN, and NRC, suggesting
+              sports vocabulary maps well onto general-purpose lexicons.</p>
+          </div>
+          <div class="finding-card">
+            <div class="finding-metric tf">Technology</div>
+            <div class="finding-val">Moderately Positive</div>
+            <p class="finding-desc">Technology articles show mild positive sentiment,
+              with innovation-related words boosting scores. However, content about
+              security, risk, and regulation pulls sentiment toward neutral or
+              slightly negative in some articles.</p>
+          </div>
+          <div class="finding-card">
+            <div class="finding-metric tf">Business</div>
+            <div class="finding-val">Mixed / Slightly Negative</div>
+            <p class="finding-desc">Business articles show the greatest disagreement
+              between lexicons — particularly between Loughran-McDonald (strongly
+              negative due to financial terminology) and Bing/AFINN (closer to
+              neutral), illustrating how domain matters for lexicon selection.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">05<span>Contributions</span></div>
+    <ul class="learned-list">
+      <li class="learned-item"><span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Reproduced canonical tidy text workflow</strong> — Implemented the full
+          Chapter 2 pipeline from <em>Text Mining with R</em>: tokenization via
+          <code>unnest_tokens()</code>, stop word removal, lexicon joins, 80-line chunking,
+          and sentiment visualization across all 6 Jane Austen novels and three lexicons.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>NewsAPI integration and corpus construction</strong> — Built a reusable
+          <code>get_news(query)</code> function using <code>httr</code> and <code>jsonlite</code>
+          to retrieve 100 full articles per category from <code>/v2/everything</code>.
+          Combined title, description, and content into a single unified text field for
+          richer sentiment signals than headline-only approaches.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Four-lexicon comparative analysis</strong> — Applied Bing, AFINN, NRC,
+          and Loughran–McDonald lexicons to the same political news text, revealing
+          systematic divergence: Loughran–McDonald consistently skews more negative due
+          to domain-specific financial vocabulary — a bias absent in the other three.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Domain-specific stop word removal</strong> — Extended the standard
+          <code>stop_words</code> list with a custom tibble
+          (<code>tibble(word=c("trump"), lexicon="custom")</code>) to remove political
+          named entities that distort sentiment scoring — demonstrating the importance
+          of corpus-aware preprocessing in NLP pipelines.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Cross-corpus comparative insight</strong> — Quantified and visualized
+          the fundamental difference between literary and news sentiment: structured
+          narrative prose produces smooth, interpretable sentiment arcs while real-world
+          news yields volatile, lexicon-sensitive results that require careful
+          methodological choices.
+        </span>
+      </li>
+    </ul>
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>R · Quarto</td></tr>
+        <tr><td>Packages</td><td>tidytext · janeaustenr · dplyr · tidyr · stringr · ggplot2 · httr · jsonlite · purrr · tibble</td></tr>
+        <tr><td>Corpus 1</td><td>Jane Austen — 6 novels via janeaustenr package</td></tr>
+        <tr><td>Corpus 2</td><td>NewsAPI /v2/everything · politics, technology, business, sports · ~100 articles/category</td></tr>
+        <tr><td>Lexicons</td><td>Bing (Hu &amp; Liu 2004) · AFINN (Nielsen 2011) · NRC (Mohammad &amp; Turney 2013) · Loughran-McDonald (2011)</td></tr>
+        <tr><td>Chunking</td><td>80-line sections (literary) · per-article aggregation (news)</td></tr>
+        <tr><td>Stop words</td><td>tidytext::stop_words + custom domain stop words (named entities)</td></tr>
+        <tr><td>Course</td><td>DATA 607 · Data Acquisition and Management · CUNY SPS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full analysis</h3>
+      <p>Full Quarto report on RPubs · source code and data on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/Sentiment-Analysis" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://rpubs.com/nafees19/1421175" target="_blank" class="btn btn-rpubs">RPubs Report ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+<script>
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})
+  },{threshold:.07});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
