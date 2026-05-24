@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Classification — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#ffffff; --bg2:#f7f9fb; --navy:#0b2545; --teal:#0e7c86;
+      --teal-light:#e6f4f5; --teal-mid:#b2dde2; --text:#1a2332;
+      --muted:#5a6a7a; --muted2:#8a9aaa; --border:#dde5ed; --border2:#c8d5e0;
+      --spam:#c83737; --spam-l:#fff0f0; --ham:#289050; --ham-l:#edfaf2;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0 5rem;height:64px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);text-decoration:none}
+    .nav-logo span{color:var(--teal)}
+    .nav-right{display:flex;align-items:center;gap:2.5rem}
+    .nav-right a{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+    .nav-right a:hover{color:var(--teal)}
+    .hero-strip{margin-top:64px;display:grid;grid-template-columns:1fr 320px;border-bottom:1px solid var(--border);min-height:58vh}
+    .hero-main{padding:5rem 5rem 4.5rem;display:flex;flex-direction:column;justify-content:flex-end;border-right:1px solid var(--border)}
+    .breadcrumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3.5rem}
+    .breadcrumb a{color:var(--teal);text-decoration:none}
+    .breadcrumb-sep{color:var(--border2)}
+    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem}
+    .hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--teal)}
+    .hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:300;color:var(--navy);line-height:1.1;letter-spacing:-.01em;margin-bottom:1.5rem}
+    .hero-h1 strong{font-weight:600} .hero-h1 em{color:var(--teal);font-style:italic}
+    .hero-desc{font-size:.95rem;color:var(--muted);font-weight:300;max-width:560px;line-height:1.85;margin-bottom:2.25rem}
+    .tag-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border:1px solid var(--teal-mid);background:var(--teal-light);color:var(--teal)}
+    .tag-r{border-color:#276dc3;background:#edf4ff;color:#276dc3}
+    .tag-pub{border-color:#4a2c8a;background:#f3eeff;color:#4a2c8a}
+    .hero-meta{padding:5rem 2.5rem 4.5rem;background:var(--bg2);display:flex;flex-direction:column;justify-content:flex-end}
+    .meta-item{padding:1rem 0;border-top:1px solid var(--border)}
+    .meta-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem}
+    .meta-val{font-family:'Inter',sans-serif;font-size:.875rem;color:var(--text)}
+    .meta-val.pub{color:#4a2c8a}
+    .meta-links{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem}
+    .meta-link{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);text-decoration:none;transition:opacity .2s}
+    .meta-link:hover{opacity:.65}
+    .page{max-width:1160px;margin:0 auto;padding:0 5rem}
+    .rail-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;padding-top:.3rem}
+    .rail-label span{display:block;color:var(--muted2);font-size:.58rem;margin-top:.3rem}
+
+    /* ── ABOUT ── */
+    .section-about{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .prose p{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.9;margin-bottom:1rem}
+    .prose p:last-child{margin-bottom:0}
+    .prose strong{color:var(--text);font-weight:500}
+
+    /* ── DATA ── */
+    .section-data{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .data-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .data-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .dataset-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px}
+    .ds-card{background:var(--bg);padding:1.75rem 1.5rem 2rem}
+    .ds-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem}
+    .ds-label.spam-lbl{color:var(--spam)} .ds-label.ham-lbl{color:var(--ham)} .ds-label.test-lbl{color:var(--teal)}
+    .ds-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+    .ds-count{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:600;line-height:1;margin-bottom:.35rem}
+    .ds-count.spam-c{color:var(--spam)} .ds-count.ham-c{color:var(--ham)} .ds-count.test-c{color:var(--teal)}
+    .ds-desc{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.6}
+
+    /* ── PIPELINE ── */
+    .section-pipeline{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .pipeline-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .pipeline-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .pipeline-steps{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .pipeline-step{background:var(--bg);display:grid;grid-template-columns:52px 1fr}
+    .pipeline-step.highlight{background:var(--teal-light)}
+    .step-num{background:var(--bg2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal);letter-spacing:.1em}
+    .pipeline-step.highlight .step-num{background:var(--navy);color:#fff;border-right-color:var(--navy)}
+    .step-body{padding:1.1rem 1.5rem}
+    .step-title{font-family:'Inter',sans-serif;font-size:.875rem;font-weight:500;color:var(--text);margin-bottom:.2rem}
+    .step-desc{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .step-code{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal);background:var(--teal-light);border:1px solid var(--teal-mid);padding:.2rem .5rem;margin-top:.4rem;display:inline-block}
+
+    /* ── MODELS ── */
+    .section-models{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .models-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .models-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .model-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .model-card{background:var(--bg);padding:1.75rem 1.5rem 2rem}
+    .model-badge{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;color:var(--teal)}
+    .model-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+    .model-spec{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--teal);background:var(--teal-light);border:1px solid var(--teal-mid);padding:.22rem .55rem;margin-bottom:.85rem;display:inline-block}
+    .model-desc{font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.65}
+    .model-winner{border:1px solid var(--ham);background:var(--ham-l)}
+    .model-winner .model-badge{color:var(--ham)}
+    .winner-tag{display:inline-flex;align-items:center;gap:.3rem;font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;margin-top:.85rem;border:1px solid var(--navy);background:var(--navy);color:#fff}
+
+    /* ── RESULTS ── */
+    .section-results{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr;gap:4.5rem;align-items:start}
+    .results-inner{display:flex;flex-direction:column;gap:2.5rem}
+    .results-label{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);margin-bottom:1rem}
+    .verdict-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem}
+    .verdict-card{background:var(--bg);padding:1.5rem}
+    .verdict-card.win-card{background:var(--ham-l)}
+    .verdict-metric{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem}
+    .verdict-val{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+    .verdict-detail{font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .results-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .results-table th{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);background:var(--bg2);padding:.8rem 1.1rem;border-bottom:1px solid var(--border);text-align:left;border-right:1px solid var(--border)}
+    .results-table th:last-child{border-right:none}
+    .results-table td{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);padding:.7rem 1.1rem;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+    .results-table td:last-child{border-right:none}
+    .results-table tr:last-child td{border-bottom:none}
+    .results-table tr.best td{background:var(--ham-l);color:var(--text)}
+    .results-table tr.best td:first-child{color:var(--ham);font-weight:600}
+    .results-table td.win{color:var(--ham);font-weight:600}
+    .results-table td.loss{color:var(--spam)}
+
+    /* ── SKILLS ── */
+    .section-skills{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .learned-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .learned-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .learned-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .learned-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .learned-text strong{color:var(--text);font-weight:500}
+    .tools-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .tools-table tr{border-bottom:1px solid var(--border)}
+    .tools-table tr:last-child{border-bottom:none}
+    .tools-table td{padding:.85rem 1.1rem;font-family:'JetBrains Mono',monospace;font-size:.7rem}
+    .tools-table td:first-child{color:var(--teal);letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;background:var(--bg2);border-right:1px solid var(--border);white-space:nowrap;width:120px}
+    .tools-table td:last-child{color:var(--muted)}
+
+    /* ── CTA ── */
+    .section-cta{padding:3.5rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .cta-text h3{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:600;color:var(--navy);margin-bottom:.25rem}
+    .cta-text p{font-size:.875rem;color:var(--muted);font-weight:300}
+    .btn-row{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--navy);color:#fff} .btn-primary:hover{background:var(--teal)}
+    .btn-rpubs{background:#4a2c8a;color:#fff} .btn-rpubs:hover{background:#361e66}
+    .btn-outline{border:1.5px solid var(--border2);color:var(--navy);background:transparent} .btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+    footer{padding:1.75rem 5rem;display:flex;justify-content:space-between;align-items:center}
+    footer p{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted2)}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media(max-width:960px){
+      nav{padding:0 1.5rem} .hero-strip{grid-template-columns:1fr} .hero-main{padding:3.5rem 1.5rem 2.5rem}
+      .hero-meta{padding:2rem 1.5rem;flex-direction:row;flex-wrap:wrap;border-top:1px solid var(--border)} .meta-item{flex:1 1 45%}
+      .page{padding:0 1.5rem} .section-about,.section-skills{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .section-results{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .data-top,.pipeline-top,.models-top{grid-template-columns:1fr;gap:1.5rem}
+      .section-data,.section-pipeline,.section-models{padding:3rem 0}
+      .dataset-grid,.model-grid,.verdict-grid{grid-template-columns:1fr}
+      .section-cta{flex-direction:column;gap:2rem;align-items:flex-start;padding:3rem 0}
+      footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a><span class="breadcrumb-sep">/</span>
+      <span>Document Classification</span>
+    </div>
+    <div class="hero-eyebrow">R · NLP · Supervised Learning · CUNY DATA 607</div>
+    <h1 class="hero-h1">
+      <strong>Document Classification</strong> —<br>
+      <em>Spam Email Detection</em> with SVM &amp; Logistic Regression
+    </h1>
+    <p class="hero-desc">
+      A supervised text classification pipeline that trains on <strong>3,879 labeled emails</strong>
+      from the SpamAssassin corpus and validates on 50 real-world Gmail spam messages.
+      TF-IDF features (max 2,000 tokens) with 5-fold cross-validation power two models —
+      Linear SVM and Logistic Regression — with SVM achieving
+      <strong>99.0% holdout accuracy</strong> and significantly stronger
+      real-world generalization than Logistic Regression.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-r">R</span>
+      <span class="tag">tidymodels</span>
+      <span class="tag">TF-IDF</span>
+      <span class="tag">Linear SVM</span>
+      <span class="tag">Logistic Regression</span>
+      <span class="tag">SpamAssassin</span>
+      <span class="tag">NLP</span>
+      <span class="tag tag-pub">CUNY DATA 607</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="meta-key">Language</div><div class="meta-val">R · Quarto</div></div>
+    <div class="meta-item"><div class="meta-key">Training Data</div><div class="meta-val">SpamAssassin corpus · 3,879 emails</div></div>
+    <div class="meta-item"><div class="meta-key">Test Data</div><div class="meta-val">Personal Gmail MBOX · 50 real spam</div></div>
+    <div class="meta-item"><div class="meta-key">Models</div><div class="meta-val">Linear SVM (LiblineaR) · Logistic Regression (glmnet)</div></div>
+    <div class="meta-item"><div class="meta-key">Best Result</div><div class="meta-val">SVM: 99.0% holdout · 92% real-world</div></div>
+    <div class="meta-item"><div class="meta-key">Course</div><div class="meta-val pub">DATA 607 · CUNY SPS · Project 4</div></div>
+    <div class="meta-item"><div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/Document-Classification" target="_blank" class="meta-link">GitHub Repo ↗</a>
+        <a href="https://rpubs.com/nafees19/1428200" target="_blank" class="meta-link">RPubs Report ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>The core research question is whether a machine learning model trained on
+        <strong>labeled historical email data</strong> can accurately classify new,
+        unseen emails as spam or ham based purely on text content — without any
+        rule-based keyword lists or manual filters.</p>
+      <p>This follows a fully <strong>supervised learning approach</strong>: labeled
+        SpamAssassin emails build the classifier; the model is then deployed on 50
+        personal Gmail spam messages it has never seen — a realistic out-of-distribution
+        evaluation that goes beyond the typical held-out split.</p>
+    </div>
+    <div class="prose">
+      <p>The central challenge is <strong>highly unstructured email data</strong>.
+        Emails contain mixed HTML, quoted-printable encoded characters, system
+        headers, forwarding artifacts, mailing list noise, and base64 blobs — all
+        of which must be stripped without destroying the content words that
+        carry classification signal.</p>
+      <p>A second challenge is <strong>pipeline consistency</strong> across two
+        differently formatted datasets: folder-based .txt files (training) vs. a
+        single MBOX file (test). Both require separate but comparable
+        preprocessing pipelines producing identically structured TF-IDF feature
+        matrices before any model sees the data.</p>
+    </div>
+  </div>
+
+  <!-- 02 DATA -->
+  <div class="section-data reveal">
+    <div class="data-top">
+      <div class="rail-label">02<span>Dataset</span></div>
+      <p class="data-intro">
+        Training data comes from the <strong>SpamAssassin public corpus</strong> —
+        a widely used benchmark for spam classification research. Each email is stored
+        as a raw .txt file in either a <code>spam_2</code> or <code>easy_ham</code>
+        directory. Test data is a personal MBOX export of 50 Gmail spam emails,
+        providing a challenging real-world validation set with different noise
+        characteristics from the training corpus.
+      </p>
+    </div>
+    <div class="dataset-grid">
+      <div class="ds-card">
+        <div class="ds-label spam-lbl">Training — Spam</div>
+        <div class="ds-name">SpamAssassin spam_2</div>
+        <div class="ds-count spam-c">1,391</div>
+        <p class="ds-desc">Raw spam emails from the SpamAssassin corpus.
+          Labeled as <em>spam</em>. Contains promotional messages,
+          phishing attempts, and automated bulk email with heavy
+          HTML encoding and obfuscation techniques.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-label ham-lbl">Training — Ham</div>
+        <div class="ds-name">SpamAssassin easy_ham</div>
+        <div class="ds-count ham-c">2,488</div>
+        <p class="ds-desc">Legitimate emails labeled as <em>ham</em>.
+          Includes plain-text mailing list messages, personal
+          correspondence, and technical discussion threads.
+          Contains reply-quoting artifacts and list metadata noise.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-label test-lbl">Test — Real-World Spam</div>
+        <div class="ds-name">Personal Gmail MBOX</div>
+        <div class="ds-count test-c">50</div>
+        <p class="ds-desc">Real Gmail spam emails exported as a single
+          MBOX file. All assumed spam (ground truth = spam). Contains
+          quoted-printable encoded content, Google system headers,
+          and modern commercial spam patterns.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-label" style="color:var(--teal)">Split &amp; Validation</div>
+        <div class="ds-name">80 / 20 Stratified + 5-Fold CV</div>
+        <div class="ds-count" style="color:var(--navy)">3,879</div>
+        <p class="ds-desc">Training corpus split 80/20 stratified by label
+          (<code>initial_split</code>). 5-fold cross-validation
+          (<code>vfold_cv</code>) on the training split for robust
+          hyperparameter tuning before final holdout evaluation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 PREPROCESSING PIPELINE -->
+  <div class="section-pipeline reveal">
+    <div class="pipeline-top">
+      <div class="rail-label">03<span>Pipeline</span></div>
+      <p class="pipeline-intro">
+        Raw emails require extensive preprocessing before any model can learn from them.
+        Two separate pipelines are implemented — one for the folder-based training corpus
+        and one for the MBOX test file — both producing identically structured cleaned
+        text columns. The MBOX pipeline adds a <strong>quoted-printable decoder</strong>
+        (<code>decode_qp_safe()</code>) not needed for the training data.
+      </p>
+    </div>
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Load raw emails from disk</div>
+          <div class="step-desc">Training: <code>list.files()</code> + <code>readLines()</code> per file, UTF-8 encoding. Test: single <code>readLines()</code> on the MBOX file, then split on <code>"^From "</code> delimiters to isolate individual messages.</div>
+          <span class="step-code">map_chr(files, ~paste(readLines(.), collapse="\n"))</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Extract email body (strip headers)</div>
+          <div class="step-desc">Each email is split on the first double newline (<code>"\n\n"</code>). Only the second part (body) is retained. Email headers — From, Subject, Content-Type, Received — are discarded entirely.</div>
+          <span class="step-code">str_split(x, "\n\n", n=2, simplify=TRUE)[2]</span>
+        </div>
+      </div>
+      <div class="pipeline-step highlight">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Decode quoted-printable encoding (MBOX only)</div>
+          <div class="step-desc">MBOX emails use quoted-printable encoding (<code>=XX</code> hex sequences, <code>=\r\n</code> soft line breaks). A custom <code>decode_qp_safe()</code> function converts hex sequences to characters using <code>rawToChar(as.raw(strtoi(...)))</code>.</div>
+          <span class="step-code">str_replace_all(x, "=[0-9A-Fa-f]{2}", decode_fn)</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">Remove HTML, URLs, and email addresses</div>
+          <div class="step-desc">Strip all HTML tags (<code>&lt;[^&gt;]+&gt;</code>), URLs (<code>http\S+|www\S+</code>), and email addresses (<code>[[:alnum:]._%+-]+@[[:alnum:].-]+</code>). Replaced with single spaces to preserve word boundaries.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <div class="step-title">Remove HTML/CSS tokens, mailing list artifacts, reply markers</div>
+          <div class="step-desc">Strip specific HTML keywords (<code>nbsp|href|font|table|td|tr|img|meta|html|style|align</code>), encoded segments (<code>==.*?==</code>), and reply-quoting markers (<code>^&gt;+\s*</code>) that are heavy in ham emails.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">06</div>
+        <div class="step-body">
+          <div class="step-title">Lowercase, remove punctuation and digits</div>
+          <div class="step-desc"><code>str_to_lower()</code>, remove non-ASCII characters, remove digit sequences, remove all punctuation. Each step replaces matched content with a space rather than empty string to preserve word separation.</div>
+          <span class="step-code">str_to_lower() %&gt;% str_replace_all("[[:digit:]]+", " ")</span>
+        </div>
+      </div>
+      <div class="pipeline-step highlight">
+        <div class="step-num">07</div>
+        <div class="step-body">
+          <div class="step-title">TF-IDF feature extraction (max 2,000 tokens)</div>
+          <div class="step-desc">textrecipes pipeline: <code>step_tokenize()</code> → <code>step_stopwords()</code> → <code>step_tokenfilter(max_tokens=2000)</code> → <code>step_tfidf()</code>. Applied identically to training and test sets via the same fitted recipe object.</div>
+          <span class="step-code">recipe(label ~ text) %&gt;% step_tokenize() %&gt;% step_tfidf()</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">08</div>
+        <div class="step-body">
+          <div class="step-title">Filter short/empty emails</div>
+          <div class="step-desc">Emails with fewer than 5 whitespace-separated tokens after cleaning are dropped. Removes empty shells, single-word remnants, and emails whose bodies were entirely encoding artifacts.</div>
+          <span class="step-code">filter(str_count(text, "\\S+") &gt;= 5)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 MODELS -->
+  <div class="section-models reveal">
+    <div class="models-top">
+      <div class="rail-label">04<span>Models</span></div>
+      <p class="models-intro">
+        Two supervised classification algorithms are tuned, compared via
+        5-fold cross-validation, and evaluated on a held-out test split before
+        the final external validation on real Gmail spam. Both use the same
+        TF-IDF recipe for feature consistency. Cost and penalty hyperparameters
+        are tuned via <code>tune_grid()</code> and the best configuration selected
+        by accuracy or ROC-AUC respectively.
+      </p>
+    </div>
+    <div class="model-grid">
+      <div class="model-card model-winner">
+        <div class="model-badge">Model 01 — Winner</div>
+        <div class="model-name">Linear SVM</div>
+        <div class="model-spec">svm_linear(cost=tune()) · LiblineaR engine</div>
+        <p class="model-desc">
+          A linear Support Vector Machine tuned over 8 cost values
+          (<code>cost(range=c(-3,2))</code>). Selected by highest cross-validation
+          accuracy. Achieves the best balance of precision and recall for text
+          classification — strong on high-dimensional sparse TF-IDF features.
+          Robust to overfitting given the linear kernel and regularisation via cost.
+          Outperforms Logistic Regression on both structured and real-world test data.
+        </p>
+        <span class="winner-tag">★ Best Model — 99.0% holdout · 92% Gmail</span>
+      </div>
+      <div class="model-card">
+        <div class="model-badge">Model 02</div>
+        <div class="model-name">Logistic Regression</div>
+        <div class="model-spec">logistic_reg(penalty=tune(), mixture=1) · glmnet</div>
+        <p class="model-desc">
+          LASSO-regularized logistic regression tuned over 10 penalty values
+          (<code>penalty(range=c(-4,0))</code>). Best model selected by ROC-AUC.
+          Achieves 97.3% holdout accuracy — strong in cross-validation but
+          degrades significantly (~58%) when applied to real Gmail spam, indicating
+          sensitivity to distributional shift between training and real-world data.
+          Provides probability estimates useful for threshold analysis.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">05<span>Results</span></div>
+    <div class="results-inner">
+      <div>
+        <div class="results-label">Performance Summary</div>
+        <div class="verdict-grid">
+          <div class="verdict-card win-card">
+            <div class="verdict-metric">Holdout Test Set — Linear SVM</div>
+            <div class="verdict-val">99.0% accuracy · 99.6% recall</div>
+            <p class="verdict-detail">
+              On the 20% holdout split of the SpamAssassin corpus, Linear SVM achieves
+              <strong>accuracy 0.990, recall 0.996, F1 0.992</strong> — extremely high
+              precision and near-perfect recall. Almost no spam slips through and
+              almost no ham is mislabeled.
+            </p>
+          </div>
+          <div class="verdict-card">
+            <div class="verdict-metric">Real-World Gmail Spam — Both Models</div>
+            <div class="verdict-val">SVM 92% stable · LogReg 58% unstable</div>
+            <p class="verdict-detail">
+              Applied to 50 real Gmail spam emails (ground truth = all spam),
+              <strong>SVM maintains 92% accuracy</strong> demonstrating robustness
+              to distributional shift. <strong>Logistic Regression drops to 58%</strong>
+              with unstable precision/recall — indicating over-fit to the
+              SpamAssassin format rather than general spam patterns.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="results-label">Holdout Test Set — Full Metrics Comparison</div>
+        <table class="results-table">
+          <thead>
+            <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Real-World Acc.</th></tr>
+          </thead>
+          <tbody>
+            <tr class="best">
+              <td>Linear SVM</td>
+              <td class="win">0.990</td><td class="win">0.985</td>
+              <td class="win">0.996</td><td class="win">0.992</td>
+              <td class="win">0.920</td>
+            </tr>
+            <tr>
+              <td>Logistic Regression</td>
+              <td>0.973</td><td>0.968</td>
+              <td>0.979</td><td>0.974</td>
+              <td class="loss">0.580</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="results-label">Cross-Validation Results (5-Fold) — Linear SVM</div>
+        <table class="results-table">
+          <thead>
+            <tr><th>Metric</th><th>CV Mean</th><th>Std Err</th><th>Interpretation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Accuracy</td><td class="win">~0.992</td><td>&lt;0.002</td><td>Extremely stable across folds</td></tr>
+            <tr><td>Precision</td><td class="win">~0.990</td><td>&lt;0.003</td><td>Very low false positive rate</td></tr>
+            <tr><td>Recall</td><td class="win">~0.996</td><td>&lt;0.002</td><td>Near-zero missed spam</td></tr>
+            <tr><td>F1-Score</td><td class="win">~0.993</td><td>&lt;0.002</td><td>Balanced precision/recall</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">06<span>Contributions</span></div>
+    <ul class="learned-list">
+      <li class="learned-item"><span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>Dual-source preprocessing pipelines</strong> — Built two separate but
+          comparable cleaning pipelines for folder-based .txt emails and MBOX format,
+          including a custom <code>decode_qp_safe()</code> quoted-printable decoder that
+          handles hex sequences vector-safely using <code>rawToChar(as.raw(strtoi(...)))</code>.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>TF-IDF feature engineering with textrecipes</strong> — Implemented a
+          full tidymodels recipe: tokenization, stopword removal, token frequency
+          filtering (max 2,000), and TF-IDF weighting — fitted on training data
+          and applied consistently to both holdout and real-world test sets.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Hyperparameter tuning via 5-fold CV</strong> — Tuned Linear SVM over
+          8 cost values and Logistic Regression over 10 penalty values using
+          <code>tune_grid()</code> with stratified 5-fold cross-validation. Selected
+          best configurations by accuracy (SVM) and ROC-AUC (LogReg).
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Real-world external validation</strong> — Evaluated both models on 50
+          personal Gmail spam emails as a true out-of-distribution test — revealing
+          significant generalization gap in Logistic Regression (~58%) vs SVM's
+          stability (~92%), a result not visible in the in-distribution holdout split alone.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>End-to-end tidymodels workflow</strong> — Built complete
+          <code>workflow()</code> objects combining recipe + model spec, enabling
+          clean refit and prediction on new data. All steps documented in Quarto
+          with full reproducibility — published on RPubs.
+        </span>
+      </li>
+    </ul>
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>R · Quarto</td></tr>
+        <tr><td>Packages</td><td>tidyverse · tidymodels · textrecipes · glmnet · LiblineaR · stringr · stringi · tm · stopwords</td></tr>
+        <tr><td>Training Data</td><td>SpamAssassin corpus — spam_2 (1,391) + easy_ham (2,488) = 3,879 emails</td></tr>
+        <tr><td>Test Data</td><td>Personal Gmail MBOX export — 50 real-world spam emails</td></tr>
+        <tr><td>Features</td><td>TF-IDF · max_tokens=2000 · stopwords removed · step_tokenfilter</td></tr>
+        <tr><td>Models</td><td>Linear SVM (LiblineaR) · LASSO Logistic Regression (glmnet)</td></tr>
+        <tr><td>Validation</td><td>80/20 stratified split · 5-fold CV · external real-world MBOX test</td></tr>
+        <tr><td>Course</td><td>DATA 607 · Data Acquisition and Management · CUNY SPS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full analysis</h3>
+      <p>Full Quarto report on RPubs · source code and datasets on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/Document-Classification" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="https://rpubs.com/nafees19/1428200" target="_blank" class="btn btn-rpubs">RPubs Report ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div>
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)} });
+  }, {threshold:.07});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
