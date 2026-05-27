@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banking Management System — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+  <style>
+    :root{
+      --bg:#ffffff;--bg2:#f7f9fb;--navy:#0b2545;--teal:#0e7c86;
+      --teal-light:#e6f4f5;--teal-mid:#b2dde2;--text:#1a2332;
+      --muted:#5a6a7a;--muted2:#8a9aaa;--border:#dde5ed;--border2:#c8d5e0;
+      --red:#c0392b;--red-l:#fdf0ee;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0 5rem;height:64px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);text-decoration:none}
+    .nav-logo span{color:var(--teal)}
+    .nav-right{display:flex;align-items:center;gap:2.5rem}
+    .nav-right a{font-size:.75rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+    .nav-right a:hover{color:var(--teal)}
+    .hero-strip{margin-top:64px;display:grid;grid-template-columns:1fr 320px;border-bottom:1px solid var(--border);min-height:56vh}
+    .hero-main{padding:5rem 5rem 4.5rem;display:flex;flex-direction:column;justify-content:flex-end;border-right:1px solid var(--border)}
+    .breadcrumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3.5rem}
+    .breadcrumb a{color:var(--teal);text-decoration:none}
+    .breadcrumb-sep{color:var(--border2)}
+    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem}
+    .hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--teal)}
+    .hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:300;color:var(--navy);line-height:1.1;letter-spacing:-.01em;margin-bottom:1.5rem}
+    .hero-h1 strong{font-weight:600}.hero-h1 em{color:var(--teal);font-style:italic}
+    .hero-desc{font-size:.95rem;color:var(--muted);font-weight:300;max-width:560px;line-height:1.85;margin-bottom:2.25rem}
+    .tag-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border:1px solid var(--teal-mid);background:var(--teal-light);color:var(--teal)}
+    .tag-r{border-color:#276dc3;background:#edf4ff;color:#276dc3}
+    .tag-pub{border-color:#4a2c8a;background:#f3eeff;color:#4a2c8a}
+    .hero-meta{padding:5rem 2.5rem 4.5rem;background:var(--bg2);display:flex;flex-direction:column;justify-content:flex-end}
+    .meta-item{padding:1rem 0;border-top:1px solid var(--border)}
+    .meta-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem}
+    .meta-val{font-size:.875rem;color:var(--text)}
+    .meta-val.cuny{color:#4a2c8a}
+    .meta-links{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem}
+    .meta-link{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);text-decoration:none;transition:opacity .2s}
+    .meta-link:hover{opacity:.65}
+    .page{max-width:1160px;margin:0 auto;padding:0 5rem}
+    .rail-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;padding-top:.3rem}
+    .rail-label span{display:block;color:var(--muted2);font-size:.58rem;margin-top:.3rem}
+    .section-about{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .prose p{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.9;margin-bottom:1rem}
+    .prose p:last-child{margin-bottom:0}
+    .prose strong{color:var(--text);font-weight:500}
+
+    .section-pipeline{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .pipe-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .pipe-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .pipe-steps{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .pipe-step{background:var(--bg);display:grid;grid-template-columns:52px 1fr}
+    .pipe-step.hi{background:var(--teal-light)}
+    .step-n{background:var(--bg2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal)}
+    .pipe-step.hi .step-n{background:var(--navy);color:#fff;border-right-color:var(--navy)}
+    .step-b{padding:1rem 1.5rem}
+    .step-t{font-size:.875rem;font-weight:500;color:var(--text);margin-bottom:.2rem}
+    .step-d{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .step-c{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal);background:var(--teal-light);border:1px solid var(--teal-mid);padding:.2rem .5rem;margin-top:.4rem;display:inline-block}
+
+    .section-dashboard{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .dash-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .dash-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .dash-live-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border:1px solid var(--teal);color:var(--teal);background:var(--teal-light);margin-bottom:1rem}
+    .dash-live-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .chart-container{border:1px solid var(--border);background:var(--bg);margin-bottom:1px}
+    .chart-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .chart-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--navy);letter-spacing:.06em;text-transform:uppercase}
+    .chart-sub{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2)}
+    .chart-body{padding:0}
+    #schema-chart{width:100%;height:440px}
+    #wpf-chart{width:100%;height:380px}
+    .dash-note{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);line-height:1.7;margin-top:1rem}
+
+    .section-results{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr;gap:4.5rem;align-items:start}
+    .res-inner{display:flex;flex-direction:column;gap:2.5rem}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+    .stat-card{background:var(--bg);padding:1.5rem}
+    .stat-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+    .stat-val{font-family:'Inter',sans-serif;font-size:1.75rem;font-weight:600;color:var(--teal);line-height:1;margin-bottom:.25rem}
+    .stat-val span{font-size:1.1rem}
+    .stat-label{font-size:.8rem;color:var(--muted);font-weight:300}
+    .findings-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .finding-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .finding-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .finding-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .finding-text strong{color:var(--text);font-weight:500}
+
+    .section-skills{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .learned-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .learned-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .learned-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .learned-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .learned-text strong{color:var(--text);font-weight:500}
+    .tools-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .tools-table tr{border-bottom:1px solid var(--border)}
+    .tools-table tr:last-child{border-bottom:none}
+    .tools-table td{padding:.85rem 1.1rem;font-family:'JetBrains Mono',monospace;font-size:.7rem}
+    .tools-table td:first-child{color:var(--teal);letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;background:var(--bg2);border-right:1px solid var(--border);white-space:nowrap;width:120px}
+    .tools-table td:last-child{color:var(--muted)}
+
+    .section-cta{padding:3.5rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .cta-text h3{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:600;color:var(--navy);margin-bottom:.25rem}
+    .cta-text p{font-size:.875rem;color:var(--muted);font-weight:300}
+    .btn-row{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:var(--teal)}
+    .btn-rpubs{background:#4a2c8a;color:#fff}.btn-rpubs:hover{background:#361e66}
+    .btn-outline{border:1.5px solid var(--border2);color:var(--navy);background:transparent}.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+    footer{padding:1.75rem 5rem;display:flex;justify-content:space-between;align-items:center}
+    footer p{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted2)}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media(max-width:960px){
+      nav{padding:0 1.5rem}.hero-strip{grid-template-columns:1fr}.hero-main{padding:3.5rem 1.5rem 2.5rem}
+      .hero-meta{padding:2rem 1.5rem;flex-direction:row;flex-wrap:wrap;border-top:1px solid var(--border)}.meta-item{flex:1 1 45%}
+      .page{padding:0 1.5rem}.section-about,.section-skills{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .section-results{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .pipe-top,.dash-top{grid-template-columns:1fr;gap:1.5rem}
+      .section-pipeline,.section-dashboard{padding:3rem 0}
+      .stat-grid{grid-template-columns:1fr 1fr}
+      .section-cta{flex-direction:column;gap:2rem;align-items:flex-start;padding:3rem 0}
+      footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a><span class="breadcrumb-sep">/</span>
+      <span>Banking Management System</span>
+    </div>
+    <div class="hero-eyebrow">C# · WPF · MySQL · ER Modeling · Role-Based Access · Academic Project</div>
+    <h1 class="hero-h1">
+      <strong>Banking Management System</strong> —<br>
+      A <em>Complete Database Design</em> &amp; Desktop Client
+    </h1>
+    <p class="hero-desc">
+      An end-to-end academic project pairing a <strong>9-entity Entity-Relationship
+      design</strong> for a retail bank with a working <strong>WPF desktop client on
+      MySQL</strong>. The schema is modeled in two clusters — Customer Data (country, city,
+      address, customer) and Branch (employee, store, account, payment, loan) — then
+      implemented as operational tables (LoginInformation, clientinfo, Depositor,
+      AllTransaction) driving a <strong>24-window WPF application</strong> with
+      <strong>role-based dashboards</strong> for Admin, Employee, and User.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-r">C# .NET 4.0</span>
+      <span class="tag">WPF</span>
+      <span class="tag">XAML</span>
+      <span class="tag">MySQL</span>
+      <span class="tag">MS Access</span>
+      <span class="tag">ER Modeling</span>
+      <span class="tag">Normalization</span>
+      <span class="tag">CRUD</span>
+      <span class="tag">Role-Based</span>
+      <span class="tag">Academic Project</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="meta-key">Domain</div><div class="meta-val">Database design · banking desktop application</div></div>
+    <div class="meta-item"><div class="meta-key">Platform</div><div class="meta-val">WPF · .NET Framework 4.0 · Visual Studio</div></div>
+    <div class="meta-item"><div class="meta-key">Database</div><div class="meta-val">MySQL (localhost · MySql.Data) · MS Access &amp; SSMS used in design phase</div></div>
+    <div class="meta-item"><div class="meta-key">Roles</div><div class="meta-val">Admin · Employee · User (routed from LoginInformation)</div></div>
+    <div class="meta-item"><div class="meta-key">Scope</div><div class="meta-val">9-entity ER design · 24 XAML windows · 4 reports</div></div>
+    <div class="meta-item"><div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://github.com/NafeesKhandker/A-Complete-Database-Design-for-Banking-Management-System" target="_blank" class="meta-link">GitHub Repo ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>The project takes a retail-banking scenario through the <strong>full database
+        design lifecycle</strong> — requirements gathering, ER modeling, normalization, SQL
+        DDL, and finally a desktop client that exercises the schema with real CRUD flows. The
+        emphasis is on the <strong>design itself</strong> being complete and traceable, not
+        just the front-end working.</p>
+      <p>The ER design is organized into two clusters. <strong>Customer Data</strong>
+        (country → city → address → customer) captures who the bank's customers are and
+        where they live; <strong>Branch</strong> (employee, store, account, payment, loan)
+        captures the bank's internal operations. The two clusters connect through customer
+        → account and employee/store relationships.</p>
+    </div>
+    <div class="prose">
+      <p>The WPF client implements the design with a simplified operational schema —
+        <code>LoginInformation</code>, <code>clientinfo</code>, <code>Depositor</code>,
+        <code>currentaccount</code>, and <code>AllTransaction</code> — accessed via
+        <strong>MySql.Data</strong> with direct ADO-style commands. Every form maps to a
+        real banking action: opening an account, choosing an account type
+        (savings / current / fixed), depositing, withdrawing, transferring, applying for a
+        loan, and reviewing the full transaction history.</p>
+      <p>Login routes by the <code>Role</code> column in <code>LoginInformation</code>:
+        <strong>Admin</strong> opens the admin dashboard with full CRUD plus
+        <em>AdminShowAll</em> reporting; <strong>Employee</strong> and <strong>User</strong>
+        get scoped dashboards tailored to their day-to-day tasks. The result is a small but
+        coherent <em>design → code → UI</em> walkthrough that demonstrates how a normalized
+        schema becomes a working application.</p>
+    </div>
+  </div>
+
+  <!-- 02 PIPELINE / DESIGN LIFECYCLE -->
+  <div class="section-pipeline reveal">
+    <div class="pipe-top">
+      <div class="rail-label">02<span>Design Lifecycle</span></div>
+      <p class="pipe-intro">
+        The project moves through the six classical stages of database design and then a
+        full client implementation: requirements → ER model → normalized tables → SQL DDL →
+        MySQL operational schema → WPF client. Each stage produces a concrete artifact in
+        the repository (ER diagrams, schema reports, .mdf snapshots, XAML windows, C# data
+        code).
+      </p>
+    </div>
+    <div class="pipe-steps">
+      <div class="pipe-step">
+        <div class="step-n">01</div>
+        <div class="step-b">
+          <div class="step-t">Requirements — retail bank operations</div>
+          <div class="step-d">Capture the bank's day-to-day flows: open / close accounts, deposit and withdraw cash, transfer between accounts, apply for loans, search customers, run transaction reports, and manage role-based access for admin, employees, and end-users.</div>
+          <span class="step-c">requirements → use cases → entity candidates</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">02</div>
+        <div class="step-b">
+          <div class="step-t">ER modeling — two clusters, nine entities</div>
+          <div class="step-d"><strong>Customer Data</strong> cluster — <code>country</code>, <code>city</code>, <code>address</code>, <code>customer</code>. <strong>Branch</strong> cluster — <code>Employee</code>, <code>store</code>, <code>Account</code>, <code>payment</code>, <code>Loan</code>. Relationships and cardinalities are diagrammed (orange + green ER diagram in the repo).</div>
+          <span class="step-c">9 entities · 2 clusters · 1:N / N:1 relationships</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">03</div>
+        <div class="step-b">
+          <div class="step-t">Normalization &amp; keys</div>
+          <div class="step-d">Each entity gets a primary key (<code>customer_id</code>, <code>staff_id</code>, <code>store_id</code>, <code>loan_id</code>, …) and foreign keys to its neighbours (<code>address.city_id</code>, <code>customer.address_id</code>, <code>payment.customer_id</code>). Indexes are defined for join-heavy paths (<code>idx_fk_store_id</code>, <code>idx_fk_address_id</code>, <code>idx_last_name</code>).</div>
+          <span class="step-c">3NF · PK / FK / indexes per entity</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">04</div>
+        <div class="step-b">
+          <div class="step-t">SQL DDL &amp; data — SSMS &amp; MS Access</div>
+          <div class="step-d">The design is realized as SQL DDL plus sample data (<code>MyDataBase.mdf</code> and the SaleCo MS Access database in the repo's <em>Initial DataBase Design</em> folder), with snapshots covering <code>CREATE</code>, <code>INSERT</code>, <code>UPDATE</code>, and a <code>Customer × Account</code> cross-join query.</div>
+          <span class="step-c">CREATE · INSERT · UPDATE · DELETE · SELECT</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">05</div>
+        <div class="step-b">
+          <div class="step-t">MySQL operational schema</div>
+          <div class="step-d">For the runtime client the schema is collapsed into operational tables — <code>LoginInformation</code> (role-based auth), <code>clientinfo</code> (customer master), <code>Depositor</code> (account balances and types), <code>currentaccount</code> (current-account specifics), and <code>AllTransaction</code> (chronological transaction log) — all served from a local <strong>MySQL</strong> instance.</div>
+          <span class="step-c">LoginInformation · clientinfo · Depositor · AllTransaction</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">06</div>
+        <div class="step-b">
+          <div class="step-t">WPF client — 24 XAML windows, role-routed</div>
+          <div class="step-d">A WPF .NET Framework 4.0 desktop app with <strong>24 XAML windows</strong> grouped into seven modules — Login &amp; Access, Dashboards, Account Management, Transactions, Lending, Reports &amp; Views, Misc. Data access is direct <strong>MySql.Data</strong> ADO (<code>MySqlConnection</code> / <code>MySqlCommand</code> / <code>MySqlDataReader</code>), with login routing to <code>AdminMainWindow</code>, <code>EmployeMainWindow</code>, or <code>UserMainWindow</code> based on the user's role.</div>
+          <span class="step-c">WPF · MySql.Data · role-based routing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 INTERACTIVE -->
+  <div class="section-dashboard reveal">
+    <div class="dash-top">
+      <div class="rail-label">03<span>Interactive Charts</span></div>
+      <div>
+        <div class="dash-live-badge">Interactive · Plotly.js</div>
+        <p class="dash-intro">
+          Two views of the project's structure rendered with <strong>Plotly.js</strong>.
+          The first shows the <strong>ER schema breakdown</strong> — attributes per
+          entity, colored by cluster (orange = Customer Data, green = Branch). The second
+          shows the <strong>WPF client breakdown</strong> — how the 24 XAML windows
+          distribute across the application's seven functional modules.
+        </p>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <span class="chart-title">ER Schema — Attributes per Entity</span>
+        <span class="chart-sub">9 entities · 2 clusters · attribute counts from ER diagram</span>
+      </div>
+      <div class="chart-body"><div id="schema-chart"></div></div>
+    </div>
+
+    <div class="chart-container" style="margin-top:1px">
+      <div class="chart-header">
+        <span class="chart-title">WPF Client — Windows by Module</span>
+        <span class="chart-sub">24 XAML windows · counted from the repo's Bankmanagment folder</span>
+      </div>
+      <div class="chart-body"><div id="wpf-chart"></div></div>
+    </div>
+
+    <p class="dash-note">
+      ⓘ Attribute counts are taken from the ER diagram included in the repo
+      (<em>Initial DataBase Design / Database snapshots / Untitled1111.jpg</em>) — a few
+      entities show "n more" in the diagram, so counts are rounded to the nearest visible
+      attribute. Window counts are direct file counts from the <code>Bankmanagment/</code>
+      directory.
+    </p>
+  </div>
+
+  <!-- 04 KEY RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">04<span>Key Numbers</span></div>
+    <div class="res-inner">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-key">ER Entities</div>
+          <div class="stat-val">9</div>
+          <div class="stat-label">Customer Data + Branch clusters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">WPF Windows</div>
+          <div class="stat-val">24</div>
+          <div class="stat-label">XAML forms across 7 modules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">User Roles</div>
+          <div class="stat-val">3</div>
+          <div class="stat-label">Admin · Employee · User dashboards</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">CRUD Tables</div>
+          <div class="stat-val">5</div>
+          <div class="stat-label">LoginInformation · clientinfo · Depositor · currentaccount · AllTransaction</div>
+        </div>
+      </div>
+
+      <ul class="findings-list">
+        <li class="finding-item"><span class="finding-num">01</span>
+          <span class="finding-text">
+            <strong>Complete design lifecycle</strong> — every stage from
+            requirements through ER, normalization, SQL, and WPF UI is preserved as an
+            artifact in the repo (ER diagrams, schema reports, <code>.mdf</code>
+            snapshots, 24 XAML windows, C# data-access code).
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">02</span>
+          <span class="finding-text">
+            <strong>Two-cluster ER architecture</strong> — separating Customer Data
+            (country / city / address / customer) from Branch (employee / store / account /
+            payment / loan) keeps the schema readable and makes the join paths between
+            people and operations explicit.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">03</span>
+          <span class="finding-text">
+            <strong>Role-based routing from a single auth table</strong> — login reads
+            the <code>Role</code> column from <code>LoginInformation</code> and dispatches
+            to <code>AdminMainWindow</code>, <code>EmployeMainWindow</code>, or
+            <code>UserMainWindow</code>, giving each role its own scoped dashboard.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">04</span>
+          <span class="finding-text">
+            <strong>Full transaction coverage</strong> — deposit, withdraw, cash withdraw,
+            transfer, loan, and balance / equity reporting are each their own XAML window,
+            all writing through to <code>Depositor</code> and appending to
+            <code>AllTransaction</code> for an auditable history.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">05</span>
+          <span class="finding-text">
+            <strong>Design / implementation drift, on purpose</strong> — the conceptual
+            ER design uses a richer model (customer · employee · store · payment · loan),
+            while the runtime schema collapses to operational tables more suited to a
+            small client. The repo documents both, making the trade-off teachable.
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 05 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">05<span>Contributions</span></div>
+    <ul class="learned-list">
+      <li class="learned-item"><span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>End-to-end design walk-through</strong> — built the project as a
+          traceable path from a written requirement to an ER diagram, a normalized
+          schema, sample data, and a working WPF client, with every intermediate
+          artifact checked into the repo.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Two-cluster ER model</strong> for a retail bank — designed and
+          documented the 9-entity Customer-Data &amp; Branch schema with primary keys,
+          foreign keys, and indexes for the join-heavy paths.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>24-window WPF client</strong> — implemented login, three role-based
+          dashboards, six account-management forms, four transaction forms, a lending
+          form, and five reporting / search windows.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Direct MySQL data access</strong> via <code>MySqlConnection</code> /
+          <code>MySqlCommand</code> / <code>MySqlDataReader</code> — every form executes
+          parameterized-style SQL against the local MySQL instance, with results bound
+          back into WPF controls.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Full transaction log &amp; reporting</strong> — every deposit, withdraw,
+          and transfer writes a row into <code>AllTransaction</code>, and the
+          <em>BalanceEquity</em> and <em>AdminShowAll</em> windows surface that history
+          for audit and reporting.
+        </span>
+      </li>
+    </ul>
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Language</td><td>C# · XAML</td></tr>
+        <tr><td>Framework</td><td>WPF · .NET Framework 4.0</td></tr>
+        <tr><td>IDE</td><td>Visual Studio</td></tr>
+        <tr><td>Database</td><td>MySQL (localhost · MySql.Data ADO) · MS Access &amp; SSMS in design phase</td></tr>
+        <tr><td>Design</td><td>9-entity ER (Customer Data + Branch clusters) · normalization · indexes</td></tr>
+        <tr><td>UI</td><td>24 XAML windows across 7 modules · role-based routing</td></tr>
+        <tr><td>Roles</td><td>Admin · Employee · User</td></tr>
+        <tr><td>Auth</td><td>Role lookup from <code>LoginInformation</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Browse the full repository</h3>
+      <p>ER diagrams, schema reports, database snapshots, and the WPF client are all on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://github.com/NafeesKhandker/A-Complete-Database-Design-for-Banking-Management-System" target="_blank" class="btn btn-primary">GitHub Repo ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+// scroll reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)} });
+}, {threshold:.07});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// ══════════════════════════════════════════════════════════════
+// CHART 1 — ER schema: attributes per entity, colored by cluster
+// Attribute counts are read from the ER diagram in the repo
+// (Untitled1111.jpg). "Customer Data" cluster vs "Branch" cluster.
+// ══════════════════════════════════════════════════════════════
+const SCHEMA = [
+  {entity:'Employee', attrs:11, cluster:'Branch'},
+  {entity:'customer', attrs:10, cluster:'Customer Data'},
+  {entity:'address',  attrs:8,  cluster:'Customer Data'},
+  {entity:'payment',  attrs:7,  cluster:'Branch'},
+  {entity:'Loan',     attrs:5,  cluster:'Branch'},
+  {entity:'store',    attrs:4,  cluster:'Branch'},
+  {entity:'city',     attrs:3,  cluster:'Customer Data'},
+  {entity:'country',  attrs:2,  cluster:'Customer Data'},
+  {entity:'Account',  attrs:2,  cluster:'Branch'},
+];
+const CUST_COLOR = '#d97a3a';   // orange (Customer Data cluster)
+const BRANCH_COLOR = '#0e7c86'; // teal/green (Branch cluster)
+Plotly.newPlot('schema-chart',
+  [{
+    type:'bar', orientation:'h',
+    x: SCHEMA.map(s=>s.attrs),
+    y: SCHEMA.map(s=>s.entity),
+    text: SCHEMA.map(s=>s.attrs+' attrs · '+s.cluster),
+    textposition:'outside',
+    textfont:{family:'JetBrains Mono, monospace', size:11, color:'#5a6a7a'},
+    marker:{
+      color: SCHEMA.map(s => s.cluster==='Customer Data' ? CUST_COLOR : BRANCH_COLOR),
+      line:{color:'#fff', width:1}
+    },
+    hovertemplate:'<b>%{y}</b><br>%{x} attributes<br>cluster: %{customdata}<extra></extra>',
+    customdata: SCHEMA.map(s=>s.cluster)
+  }],
+  {
+    yaxis:{automargin:true, autorange:'reversed', tickfont:{family:'JetBrains Mono, monospace', size:12}},
+    xaxis:{title:{text:'Attribute count', font:{size:11}}, range:[0,16],
+           showgrid:true, gridcolor:'#dde5ed', linecolor:'#dde5ed'},
+    margin:{t:24, b:40, l:80, r:20},
+    paper_bgcolor:'white', plot_bgcolor:'white', showlegend:false
+  },
+  {responsive:true, displayModeBar:true,
+   modeBarButtonsToRemove:['toImage','sendDataToCloud'], displaylogo:false}
+);
+
+// ══════════════════════════════════════════════════════════════
+// CHART 2 — WPF client: windows by module (counted from the repo)
+// ══════════════════════════════════════════════════════════════
+const MODULES = [
+  {mod:'Account Mgmt',  count:6, items:'CreateAccount · DeleteAccount · AccountType · Savings · Current · Fixed'},
+  {mod:'Reports & Views', count:5, items:'BalanceEquity · AllTransaction · SearchPerson · ShowAll · AdminShowAll'},
+  {mod:'Transactions',  count:4, items:'Deposite · Withdraw · CashWithdraw · Transfer'},
+  {mod:'Login & Access', count:3, items:'LoginWindow · ForgateWindow · AdminLoginInformation'},
+  {mod:'Dashboards',    count:3, items:'AdminMainWindow · EmployeMainWindow · UserMainWindow'},
+  {mod:'Misc',          count:2, items:'UserControl4 · App'},
+  {mod:'Lending',       count:1, items:'Loan'},
+];
+Plotly.newPlot('wpf-chart',
+  [{
+    type:'bar',
+    x: MODULES.map(m=>m.mod),
+    y: MODULES.map(m=>m.count),
+    text: MODULES.map(m=>m.count+' window'+(m.count===1?'':'s')),
+    textposition:'outside',
+    textfont:{family:'JetBrains Mono, monospace', size:11, color:'#0b2545'},
+    marker:{color:'#0b2545', line:{color:'#fff', width:1}},
+    hovertemplate:'<b>%{x}</b><br>%{y} window(s)<br>%{customdata}<extra></extra>',
+    customdata: MODULES.map(m=>m.items)
+  }],
+  {
+    yaxis:{title:{text:'XAML windows', font:{size:11}}, range:[0,8],
+           showgrid:true, gridcolor:'#dde5ed', linecolor:'#dde5ed'},
+    xaxis:{linecolor:'#dde5ed', tickfont:{size:11}},
+    margin:{t:24, b:60, l:60, r:20},
+    paper_bgcolor:'white', plot_bgcolor:'white', showlegend:false
+  },
+  {responsive:true, displayModeBar:true,
+   modeBarButtonsToRemove:['toImage','sendDataToCloud'], displaylogo:false}
+);
+</script>
+</body>
+</html>
