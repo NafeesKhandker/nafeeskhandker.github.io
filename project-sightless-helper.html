@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sightless Helper — Khandker Qaiduzzaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+  <style>
+    :root{
+      --bg:#ffffff;--bg2:#f7f9fb;--navy:#0b2545;--teal:#0e7c86;
+      --teal-light:#e6f4f5;--teal-mid:#b2dde2;--text:#1a2332;
+      --muted:#5a6a7a;--muted2:#8a9aaa;--border:#dde5ed;--border2:#c8d5e0;
+      --red:#c0392b;--red-l:#fdf0ee;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0 5rem;height:64px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--navy);text-decoration:none}
+    .nav-logo span{color:var(--teal)}
+    .nav-right{display:flex;align-items:center;gap:2.5rem}
+    .nav-right a{font-size:.75rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+    .nav-right a:hover{color:var(--teal)}
+    .hero-strip{margin-top:64px;display:grid;grid-template-columns:1fr 320px;border-bottom:1px solid var(--border);min-height:56vh}
+    .hero-main{padding:5rem 5rem 4.5rem;display:flex;flex-direction:column;justify-content:flex-end;border-right:1px solid var(--border)}
+    .breadcrumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3.5rem}
+    .breadcrumb a{color:var(--teal);text-decoration:none}
+    .breadcrumb-sep{color:var(--border2)}
+    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem}
+    .hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--teal)}
+    .hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:300;color:var(--navy);line-height:1.1;letter-spacing:-.01em;margin-bottom:1.5rem}
+    .hero-h1 strong{font-weight:600}.hero-h1 em{color:var(--teal);font-style:italic}
+    .hero-desc{font-size:.95rem;color:var(--muted);font-weight:300;max-width:560px;line-height:1.85;margin-bottom:2.25rem}
+    .tag-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border:1px solid var(--teal-mid);background:var(--teal-light);color:var(--teal)}
+    .tag-r{border-color:#276dc3;background:#edf4ff;color:#276dc3}
+    .tag-pub{border-color:#4a2c8a;background:#f3eeff;color:#4a2c8a}
+    .hero-meta{padding:5rem 2.5rem 4.5rem;background:var(--bg2);display:flex;flex-direction:column;justify-content:flex-end}
+    .meta-item{padding:1rem 0;border-top:1px solid var(--border)}
+    .meta-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem}
+    .meta-val{font-size:.875rem;color:var(--text)}
+    .meta-val.cuny{color:#4a2c8a}
+    .meta-links{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem}
+    .meta-link{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);text-decoration:none;transition:opacity .2s}
+    .meta-link:hover{opacity:.65}
+    .page{max-width:1160px;margin:0 auto;padding:0 5rem}
+    .rail-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;padding-top:.3rem}
+    .rail-label span{display:block;color:var(--muted2);font-size:.58rem;margin-top:.3rem}
+    .section-about{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .prose p{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.9;margin-bottom:1rem}
+    .prose p:last-child{margin-bottom:0}
+    .prose strong{color:var(--text);font-weight:500}
+
+    /* Pipeline */
+    .section-pipeline{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .pipe-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .pipe-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .pipe-steps{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .pipe-step{background:var(--bg);display:grid;grid-template-columns:52px 1fr}
+    .pipe-step.hi{background:var(--teal-light)}
+    .step-n{background:var(--bg2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal)}
+    .pipe-step.hi .step-n{background:var(--navy);color:#fff;border-right-color:var(--navy)}
+    .step-b{padding:1rem 1.5rem}
+    .step-t{font-size:.875rem;font-weight:500;color:var(--text);margin-bottom:.2rem}
+    .step-d{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .step-c{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--teal);background:var(--teal-light);border:1px solid var(--teal-mid);padding:.2rem .5rem;margin-top:.4rem;display:inline-block}
+
+    /* Live dashboard */
+    .section-dashboard{padding:5rem 0;border-bottom:1px solid var(--border)}
+    .dash-top{display:grid;grid-template-columns:180px 1fr;gap:4.5rem;margin-bottom:2.5rem;align-items:start}
+    .dash-intro{font-size:.925rem;color:var(--muted);font-weight:300;line-height:1.85}
+    .dash-live-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border:1px solid var(--teal);color:var(--teal);background:var(--teal-light);margin-bottom:1rem}
+    .dash-live-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .chart-container{border:1px solid var(--border);background:var(--bg);margin-bottom:1px}
+    .chart-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .chart-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--navy);letter-spacing:.06em;text-transform:uppercase}
+    .chart-sub{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2)}
+    .chart-body{padding:0}
+    #voice-chart{width:100%;height:440px}
+    #loc-chart{width:100%;height:380px}
+    .class-toggle{display:flex;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .class-toggle button{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:.4rem .9rem;background:var(--bg);color:var(--muted);border:none;cursor:pointer;transition:all .15s}
+    .class-toggle button.active{background:var(--navy);color:#fff}
+    .class-toggle button:hover:not(.active){background:var(--teal-light);color:var(--teal)}
+    .dash-note{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);line-height:1.7;margin-top:1rem}
+
+    /* Results */
+    .section-results{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr;gap:4.5rem;align-items:start}
+    .res-inner{display:flex;flex-direction:column;gap:2.5rem}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+    .stat-card{background:var(--bg);padding:1.5rem}
+    .stat-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+    .stat-val{font-family:'Inter',sans-serif;font-size:1.75rem;font-weight:600;color:var(--teal);line-height:1;margin-bottom:.25rem}
+    .stat-val span{font-size:1.1rem}
+    .stat-label{font-size:.8rem;color:var(--muted);font-weight:300}
+    .findings-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .finding-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .finding-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .finding-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .finding-text strong{color:var(--text);font-weight:500}
+
+    /* Skills */
+    .section-skills{padding:5rem 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:180px 1fr 1fr;gap:4.5rem;align-items:start}
+    .learned-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+    .learned-item{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start}
+    .learned-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--teal);flex-shrink:0;margin-top:.22rem}
+    .learned-text{font-size:.875rem;color:var(--muted);font-weight:300;line-height:1.6}
+    .learned-text strong{color:var(--text);font-weight:500}
+    .tools-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+    .tools-table tr{border-bottom:1px solid var(--border)}
+    .tools-table tr:last-child{border-bottom:none}
+    .tools-table td{padding:.85rem 1.1rem;font-family:'JetBrains Mono',monospace;font-size:.7rem}
+    .tools-table td:first-child{color:var(--teal);letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;background:var(--bg2);border-right:1px solid var(--border);white-space:nowrap;width:120px}
+    .tools-table td:last-child{color:var(--muted)}
+
+    .section-cta{padding:3.5rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .cta-text h3{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:600;color:var(--navy);margin-bottom:.25rem}
+    .cta-text p{font-size:.875rem;color:var(--muted);font-weight:300}
+    .btn-row{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:var(--teal)}
+    .btn-rpubs{background:#4a2c8a;color:#fff}.btn-rpubs:hover{background:#361e66}
+    .btn-outline{border:1.5px solid var(--border2);color:var(--navy);background:transparent}.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+    footer{padding:1.75rem 5rem;display:flex;justify-content:space-between;align-items:center}
+    footer p{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted2)}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media(max-width:960px){
+      nav{padding:0 1.5rem}.hero-strip{grid-template-columns:1fr}.hero-main{padding:3.5rem 1.5rem 2.5rem}
+      .hero-meta{padding:2rem 1.5rem;flex-direction:row;flex-wrap:wrap;border-top:1px solid var(--border)}.meta-item{flex:1 1 45%}
+      .page{padding:0 1.5rem}.section-about,.section-skills{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .section-results{grid-template-columns:1fr;gap:2rem;padding:3rem 0}
+      .pipe-top,.dash-top{grid-template-columns:1fr;gap:1.5rem}
+      .section-pipeline,.section-dashboard{padding:3rem 0}
+      .stat-grid{grid-template-columns:1fr 1fr}
+      .section-cta{flex-direction:column;gap:2rem;align-items:flex-start;padding:3rem 0}
+      footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Khandker <span>Portfolio</span></a>
+  <div class="nav-right">
+    <a href="index.html#projects">← All Projects</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero-strip">
+  <div class="hero-main">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span class="breadcrumb-sep">/</span>
+      <a href="index.html#projects">Projects</a><span class="breadcrumb-sep">/</span>
+      <span>Sightless Helper</span>
+    </div>
+    <div class="hero-eyebrow">Android · Voice · GPS · Accelerometer · Geofence · Springer ICONCS 2020</div>
+    <h1 class="hero-h1">
+      <strong>Sightless Helper</strong> —<br>
+      Mobile <em>Assistance</em> for the Visually Impaired
+    </h1>
+    <p class="hero-desc">
+      An Android application designed as an <strong>all-in-one assistant</strong> for blind
+      and visually impaired users — combining voice-driven interaction,
+      <strong>accelerometer-based footstep counting</strong> for indoor navigation,
+      <strong>GPS + Google Geofence</strong> for outdoor navigation and unsafe-area alerts,
+      and a <strong>jolt module</strong> that detects unusual shaking and auto-sends a live
+      location SMS to trusted contacts. Tested on 30 users with a
+      <strong>System Usability Scale score of 72.27</strong>.
+    </p>
+    <div class="tag-row">
+      <span class="tag tag-r">Android</span>
+      <span class="tag">Voice Command</span>
+      <span class="tag">Accelerometer</span>
+      <span class="tag">GPS</span>
+      <span class="tag">Google Geofence</span>
+      <span class="tag">Pedometer</span>
+      <span class="tag">SMS / Emergency</span>
+      <span class="tag">Accessibility</span>
+      <span class="tag">SUS 72.27</span>
+      <span class="tag tag-pub">Springer · ICONCS 2020</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="meta-key">Domain</div><div class="meta-val">Mobile accessibility · assistive technology</div></div>
+    <div class="meta-item"><div class="meta-key">Platform</div><div class="meta-val">Android (Android Studio)</div></div>
+    <div class="meta-item"><div class="meta-key">Sensors</div><div class="meta-val">Accelerometer · GPS · Microphone · Camera</div></div>
+    <div class="meta-item"><div class="meta-key">Tested</div><div class="meta-val">Voice ≈ 6.34 ms · Location ≈ 7.63 ms · SUS 72.27 (30 users)</div></div>
+    <div class="meta-item"><div class="meta-key">Publication</div><div class="meta-val cuny">Springer · ICONCS 2020 · LNICST vol. 325 · pp. 581–592</div></div>
+    <div class="meta-item"><div class="meta-key">Links</div>
+      <div class="meta-links">
+        <a href="https://link.springer.com/chapter/10.1007/978-3-030-52856-0_46" target="_blank" class="meta-link">Springer Paper ↗</a>
+        <a href="https://github.com/NafeesKhandker/Sightless-Helper" target="_blank" class="meta-link">GitHub Repo ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 01 ABOUT -->
+  <div class="section-about reveal">
+    <div class="rail-label">01<span>About</span></div>
+    <div class="prose">
+      <p>Around <strong>285 million people</strong> live with visual impairment worldwide,
+        and everyday tasks — orienting in a room, crossing a street, calling for help — can
+        be cumbersome or unsafe. Smartphones already carry the sensors needed to help, but
+        most existing apps focus on a single problem (turn-by-turn navigation, screen
+        magnification, barcode reading, etc.) and assume the user can comfortably operate a
+        touchscreen.</p>
+      <p>This work builds a <strong>single Android application</strong> that addresses
+        navigation, safety, communication, and daily utilities together, with an interaction
+        model designed for non-visual use: voice command first, with touch, hotkey buttons,
+        and shake as alternatives, all paired with audio feedback.</p>
+    </div>
+    <div class="prose">
+      <p>Two cooperating sections share a central "Blind Channel" controller. The
+        <strong>Blind Assistant Section (BAS)</strong> is configured by a trusted helper —
+        emergency contacts, named locations, footstep counts to common destinations, and
+        unsafe geofenced areas. The <strong>Blind People Section (BPS)</strong> is used by
+        the VI person — voice recognition, touch, jolt-detection, daily-info, and unsafe-area
+        indication modules.</p>
+      <p>The pedometer is built on the <strong>accelerometer</strong> (most phones lack a
+        dedicated pedometer chip), and the jolt module turns unusual phone shaking into a
+        one-shot emergency: it auto-calls a trusted number and SMSes a live Google Maps
+        location link to all stored contacts.</p>
+    </div>
+  </div>
+
+  <!-- 02 ARCHITECTURE -->
+  <div class="section-pipeline reveal">
+    <div class="pipe-top">
+      <div class="rail-label">02<span>Architecture</span></div>
+      <p class="pipe-intro">
+        The system is module-based around a central Blind Channel. The assistant-facing side
+        (BAS) sets up emergency contacts, named footstep destinations, and unsafe geofenced
+        areas; the user-facing side (BPS) handles voice, touch, jolt, daily info, and live
+        unsafe-area alerts. Indoor navigation runs on the accelerometer pedometer; outdoor
+        navigation uses GPS and Google Maps with online and offline modes.
+      </p>
+    </div>
+    <div class="pipe-steps">
+      <div class="pipe-step">
+        <div class="step-n">01</div>
+        <div class="step-b">
+          <div class="step-t">Blind Channel — central controller</div>
+          <div class="step-d">A single channel routes events between the two sections, handles permissions, and keeps the app running in the background so help is one voice command (or one shake) away.</div>
+          <span class="step-c">BlindChannel.route(event)  // BAS ⇄ BPS</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">02</div>
+        <div class="step-b">
+          <div class="step-t">BAS — Blind Assistant Section</div>
+          <div class="step-d">Used by a trusted helper to configure the app: <strong>Contact</strong> (trusted phone numbers, offline DB), <strong>Permission</strong> (background, location, SMS, camera), <strong>Pedometer</strong> (record footstep counts for named places), and <strong>Area</strong> (mark unsafe zones).</div>
+          <span class="step-c">Contact · Permission · Pedometer · Area</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">03</div>
+        <div class="step-b">
+          <div class="step-t">BPS — Blind People Section</div>
+          <div class="step-d">Used by the VI user: <strong>Voice Recognition</strong> (dictionary-based command parsing), <strong>Touch</strong> (audio-feedback hotkeys), <strong>Jolt</strong> (shake-triggered emergency), <strong>Required</strong> (time / date / battery / news), and <strong>Indication</strong> (geofence unsafe-area alerts).</div>
+          <span class="step-c">VoiceRec · Touch · Jolt · Required · Indication</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">04</div>
+        <div class="step-b">
+          <div class="step-t">Indoor navigation — accelerometer pedometer</div>
+          <div class="step-d">The helper saves footstep counts for everyday destinations (washroom, kitchen, dining table, …). When the user says <code>"Go to washroom"</code>, the app guides them by counting steps via the accelerometer — no dedicated pedometer hardware required.</div>
+          <span class="step-c">steps = accel.integrate()  // per named place</span>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="step-n">05</div>
+        <div class="step-b">
+          <div class="step-t">Outdoor navigation — GPS + Google Maps (online & offline)</div>
+          <div class="step-d">For outdoor routes the app uses GPS and Google Maps. Pre-stored locations work offline; full route guidance uses an online connection. Voice prompts announce direction changes and arrival.</div>
+          <span class="step-c">GPS + GoogleMaps  // online + offline modes</span>
+        </div>
+      </div>
+      <div class="pipe-step hi">
+        <div class="step-n">06</div>
+        <div class="step-b">
+          <div class="step-t">Safety — Jolt &amp; Geofence</div>
+          <div class="step-d">The Jolt module watches the accelerometer for <code>&gt;3</code> rapid shakes (fall or distress) and auto-calls a trusted contact while sending a live Google Maps location SMS to all stored contacts. The Indication module uses <strong>Google Geofence</strong> to warn the user whenever they enter an area marked unsafe.</div>
+          <span class="step-c">if shakes &gt; 3:  call() &amp; SMS(maps_link)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 INTERACTIVE DASHBOARD -->
+  <div class="section-dashboard reveal">
+    <div class="dash-top">
+      <div class="rail-label">03<span>Interactive Charts</span></div>
+      <div>
+        <div class="dash-live-badge">Interactive · Plotly.js</div>
+        <p class="dash-intro">
+          The two charts below reproduce the paper's performance experiments with
+          <strong>Plotly.js</strong>. The first compares <strong>voice-recognition response
+          time</strong> for ten male and ten female test cases — toggle between
+          Best, Average, and Worst response — and shows the gender-independent
+          ≈ 6.3 ms average. The second plots <strong>location-send time vs. distance</strong>
+          across ten test cases ranging from 1.5 km to 244 km, demonstrating that delivery
+          time stays near 7.6 ms regardless of geographic distance.
+        </p>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <span class="chart-title">Voice Recognition Response Time — Male vs Female</span>
+        <div class="class-toggle">
+          <button data-mode="A" class="active" onclick="setMode('A',this)">Average</button>
+          <button data-mode="B" onclick="setMode('B',this)">Best</button>
+          <button data-mode="W" onclick="setMode('W',this)">Worst</button>
+        </div>
+      </div>
+      <div class="chart-body"><div id="voice-chart"></div></div>
+    </div>
+
+    <div class="chart-container" style="margin-top:1px">
+      <div class="chart-header">
+        <span class="chart-title">Location-Send Time vs Distance</span>
+        <span class="chart-sub">10 test cases · 1.5 km → 244 km · mean 7.629 ms (SD 1.98)</span>
+      </div>
+      <div class="chart-body"><div id="loc-chart"></div></div>
+    </div>
+
+    <p class="dash-note">
+      ⓘ All values are from the paper. Voice data — Table 2 (10 male + 10 female test cases,
+      each averaged over 30 repetitions). Location data — Table 3 (10 sender/receiver pairs
+      across distances from 1.5 km to 244.2 km, response time in milliseconds).
+    </p>
+  </div>
+
+  <!-- 04 KEY RESULTS -->
+  <div class="section-results reveal">
+    <div class="rail-label">04<span>Key Results</span></div>
+    <div class="res-inner">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-key">Voice Recognition</div>
+          <div class="stat-val">6.34<span> ms</span></div>
+          <div class="stat-label">Avg across male &amp; female (gender-independent)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">Location Send</div>
+          <div class="stat-val">7.63<span> ms</span></div>
+          <div class="stat-label">Mean over 1.5–244 km · SD 1.98</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">SUS Score</div>
+          <div class="stat-val">72.27<span>%</span></div>
+          <div class="stat-label">"Good" — practical implementation suitable</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-key">Users Tested</div>
+          <div class="stat-val">30</div>
+          <div class="stat-label">SUS participants · 20 voice cases</div>
+        </div>
+      </div>
+
+      <ul class="findings-list">
+        <li class="finding-item"><span class="finding-num">01</span>
+          <span class="finding-text">
+            <strong>Near-instant, gender-independent voice recognition</strong> — averages
+            were <strong>6.303 ms (male)</strong> and <strong>6.375 ms (female)</strong>,
+            with the same best time of 5.1 ms and standard deviations under 1.05%.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">02</span>
+          <span class="finding-text">
+            <strong>Location delivery is near-constant in distance</strong> — across 10 sends
+            from 1.5 km to 244 km the response time averaged <strong>7.629 ms (SD 1.98)</strong>,
+            so emergency SMS arrives in milliseconds whether the recipient is across town or
+            across the country.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">03</span>
+          <span class="finding-text">
+            <strong>SUS 72.27 = "Good"</strong> across 30 participants, satisfying the Bangor
+            et al. threshold for practical implementation of an accessibility application.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">04</span>
+          <span class="finding-text">
+            <strong>Indoor + outdoor, online + offline</strong> — accelerometer-based
+            footstep counting handles indoor navigation without extra hardware, while GPS
+            plus Google Maps cover outdoor routes both online and offline.
+          </span>
+        </li>
+        <li class="finding-item"><span class="finding-num">05</span>
+          <span class="finding-text">
+            <strong>Safety-first design</strong> — the jolt module turns an accidental fall
+            into an automatic call and live-location SMS to trusted contacts, and the
+            Geofence-based indication module proactively warns the user near unsafe areas.
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 05 CONTRIBUTIONS + TOOLS -->
+  <div class="section-skills reveal">
+    <div class="rail-label">05<span>Contributions</span></div>
+    <ul class="learned-list">
+      <li class="learned-item"><span class="learned-num">01</span>
+        <span class="learned-text">
+          <strong>All-in-one assistant</strong> covering navigation, safety, communication,
+          and daily utilities in a single Android app — the paper's Table 4 comparison shows
+          prior tools (NavEye, NavCog3, BLaDE, Blind Reader, Screen Magnifier) each cover
+          only a subset.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">02</span>
+        <span class="learned-text">
+          <strong>Pedometer without a pedometer</strong> — implemented footstep counting on
+          the accelerometer so the app runs on the wide installed base of phones lacking a
+          dedicated step-counter sensor.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">03</span>
+        <span class="learned-text">
+          <strong>Multi-modal interaction</strong> — voice command first, with touch,
+          hotkey buttons, and shake as alternatives, plus audio feedback on the touchpad so
+          the user can hear what they are about to activate.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">04</span>
+        <span class="learned-text">
+          <strong>Jolt emergency module</strong> — accelerometer-based fall/distress
+          detection that auto-calls a trusted contact and sends a Google Maps live-location
+          SMS to all stored emergency numbers.
+        </span>
+      </li>
+      <li class="learned-item"><span class="learned-num">05</span>
+        <span class="learned-text">
+          <strong>Geofenced unsafe-area indication</strong> — Google Geofence is used to
+          notify the user the moment they step into a pre-marked risky area (busy roads,
+          stairs, balcony edges, slippery places).
+        </span>
+      </li>
+    </ul>
+    <table class="tools-table">
+      <tbody>
+        <tr><td>Platform</td><td>Android · Android Studio</td></tr>
+        <tr><td>Sensors</td><td>Accelerometer (steps + jolt) · GPS · Microphone · Camera</td></tr>
+        <tr><td>Maps / Geo</td><td>Google Maps API · Google Geofence</td></tr>
+        <tr><td>Interaction</td><td>Voice command (dictionary) · touch + audio feedback · hotkey buttons · shake</td></tr>
+        <tr><td>Modules</td><td>BAS: Contact · Permission · Pedometer · Area &nbsp;|&nbsp; BPS: VoiceRec · Touch · Jolt · Required · Indication</td></tr>
+        <tr><td>Testing</td><td>Voice 10×30 reps (male + female) · Location 10 distances (1.5–244 km) · SUS 30 users</td></tr>
+        <tr><td>Published</td><td>Springer · ICONCS 2020 · LNICST vol. 325 · pp. 581–592</td></tr>
+        <tr><td>DOI</td><td>10.1007/978-3-030-52856-0_46</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-cta reveal">
+    <div class="cta-text">
+      <h3>Read the full paper</h3>
+      <p>Springer chapter (ICONCS 2020 · LNICST 325 · pp. 581–592) · source on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a href="https://link.springer.com/chapter/10.1007/978-3-030-52856-0_46" target="_blank" class="btn btn-primary">Springer Paper ↗</a>
+      <a href="https://github.com/NafeesKhandker/Sightless-Helper" target="_blank" class="btn btn-rpubs">GitHub Repo ↗</a>
+      <a href="index.html#projects" class="btn btn-outline">All Projects</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <p>Khandker Qaiduzzaman &nbsp;·&nbsp; khandkerm.com</p>
+  <p>Built with GitHub Pages · 2025</p>
+</footer>
+
+<script>
+// ── Scroll reveal ─────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)} });
+}, {threshold:.07});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// ══════════════════════════════════════════════════════════════
+// VOICE RECOGNITION — Table 2 (10 cases × 30 reps each)
+// ══════════════════════════════════════════════════════════════
+const TESTS = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'];
+const VOICE = {
+  A: { // Average
+    male:   [6.00, 6.44, 6.28, 6.90, 6.62, 6.77, 5.86, 5.95, 6.07, 6.14],
+    female: [5.97, 5.91, 7.03, 5.30, 6.54, 6.76, 6.44, 6.91, 6.10, 6.79],
+    avgM: 6.303, avgF: 6.375,
+    title: 'Average response time per test case'
+  },
+  B: { // Best
+    male:   [5.20, 5.90, 5.70, 5.10, 5.10, 6.10, 5.10, 5.50, 5.10, 5.20],
+    female: [5.10, 5.10, 5.10, 5.20, 5.10, 5.70, 5.97, 6.10, 5.40, 5.20],
+    avgM: 5.30, avgF: 5.40,
+    title: 'Best response time per test case (best of 30 reps)'
+  },
+  W: { // Worst
+    male:   [6.50, 6.90, 9.10, 10.50, 9.60, 9.20, 8.50, 6.40, 11.20, 6.90],
+    female: [6.50, 6.97, 11.90, 6.20, 10.20, 12.60, 6.90, 10.30, 6.90, 11.60],
+    avgM: 8.48, avgF: 9.01,
+    title: 'Worst response time per test case (worst of 30 reps)'
+  }
+};
+
+function voiceTraces(mode){
+  const d = VOICE[mode];
+  return [
+    {type:'bar', name:'Male', x:TESTS, y:d.male,
+      marker:{color:'#0e7c86', line:{color:'#fff', width:1}},
+      hovertemplate:'<b>Male · %{x}</b><br>%{y:.2f} ms<extra></extra>'},
+    {type:'bar', name:'Female', x:TESTS, y:d.female,
+      marker:{color:'#0b2545', line:{color:'#fff', width:1}},
+      hovertemplate:'<b>Female · %{x}</b><br>%{y:.2f} ms<extra></extra>'}
+  ];
+}
+function voiceLayout(mode){
+  const d = VOICE[mode];
+  return {
+    barmode:'group',
+    yaxis:{title:{text:'Response time (ms)',font:{size:11}}, range:[0,14],
+           showgrid:true, gridcolor:'#dde5ed', linecolor:'#dde5ed', ticksuffix:' ms'},
+    xaxis:{linecolor:'#dde5ed', tickfont:{size:11}},
+    margin:{t:48,b:40,l:60,r:20},
+    paper_bgcolor:'white', plot_bgcolor:'white',
+    legend:{orientation:'h', x:0.5, xanchor:'center', y:1.18, font:{size:11}},
+    shapes:[
+      {type:'line', xref:'paper', x0:0, x1:1, y0:d.avgM, y1:d.avgM,
+       line:{color:'#0e7c86', width:1.5, dash:'dot'}},
+      {type:'line', xref:'paper', x0:0, x1:1, y0:d.avgF, y1:d.avgF,
+       line:{color:'#0b2545', width:1.5, dash:'dot'}}
+    ],
+    annotations:[
+      {x:1, xref:'paper', xanchor:'right', y:1.08, yref:'paper', yanchor:'bottom',
+       showarrow:false, text:d.title,
+       font:{family:'JetBrains Mono, monospace', size:9.5, color:'#8a9aaa'}},
+      {x:1.001, xref:'paper', xanchor:'left', y:d.avgM, yref:'y',
+       showarrow:false, text:'M '+d.avgM.toFixed(2),
+       font:{family:'JetBrains Mono, monospace', size:10, color:'#0e7c86'}},
+      {x:1.001, xref:'paper', xanchor:'left', y:d.avgF, yref:'y',
+       showarrow:false, text:'F '+d.avgF.toFixed(2),
+       font:{family:'JetBrains Mono, monospace', size:10, color:'#0b2545'}}
+    ]
+  };
+}
+function setMode(mode, btn){
+  if(btn){document.querySelectorAll('.class-toggle button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  Plotly.react('voice-chart', voiceTraces(mode), voiceLayout(mode),
+    {responsive:true, displayModeBar:true,
+     modeBarButtonsToRemove:['toImage','sendDataToCloud'], displaylogo:false});
+}
+setMode('A', null);
+
+// ══════════════════════════════════════════════════════════════
+// LOCATION-SEND TIME vs DISTANCE — Table 3
+// ══════════════════════════════════════════════════════════════
+const LOC = {
+  dist: [3.30, 2.54, 20.40, 13.62, 3.30, 242.00, 244.20, 204.60, 1.50, 33.00],
+  time: [6.20, 6.20,  7.40,  5.87, 8.97,  11.45,   8.20,   8.60,  4.20,  9.20]
+};
+Plotly.newPlot('loc-chart', [
+  {type:'scatter', mode:'markers+text',
+   x: LOC.dist, y: LOC.time,
+   text: LOC.time.map((t,i)=>'T'+(i+1)),
+   textposition:'top center',
+   textfont:{family:'JetBrains Mono, monospace', size:10, color:'#5a6a7a'},
+   marker:{size:12, color:'#0e7c86', line:{color:'#fff', width:1.5}},
+   hovertemplate:'<b>%{text}</b><br>Distance: %{x} km<br>Time: %{y:.2f} ms<extra></extra>',
+   name:'Test'},
+  {type:'scatter', mode:'lines',
+   x:[0.5, 300], y:[7.629, 7.629],
+   line:{color:'#0b2545', width:1.5, dash:'dot'},
+   hoverinfo:'skip',
+   name:'Mean 7.629 ms', showlegend:true}
+], {
+  xaxis:{title:{text:'Distance (km, log scale)',font:{size:11}},
+         type:'log', showgrid:true, gridcolor:'#dde5ed', linecolor:'#dde5ed'},
+  yaxis:{title:{text:'Response time (ms)',font:{size:11}}, range:[0,14],
+         showgrid:true, gridcolor:'#dde5ed', linecolor:'#dde5ed', ticksuffix:' ms'},
+  margin:{t:28,b:50,l:60,r:20},
+  paper_bgcolor:'white', plot_bgcolor:'white',
+  legend:{orientation:'h', x:0.5, xanchor:'center', y:1.12, font:{size:11}}
+}, {responsive:true, displayModeBar:true,
+    modeBarButtonsToRemove:['toImage','sendDataToCloud'], displaylogo:false});
+</script>
+</body>
+</html>
